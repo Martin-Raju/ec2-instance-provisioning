@@ -31,7 +31,7 @@ module "spot_instance" {
 
   vpc_security_group_ids = [module.security_group.security_group_id]
 
-  spot_price = 0.06
+  spot_price = "0.06"
 
   tags = {
     Environment = var.environment
