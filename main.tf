@@ -29,7 +29,7 @@ module "spot_instance" {
 
   associate_public_ip_address = true
 
-  vpc_security_group_ids = [module.sg.sg_id]
+  vpc_security_group_ids = [module.security-group.sg_id]
 
   spot_price = var.max_spot_price
 
