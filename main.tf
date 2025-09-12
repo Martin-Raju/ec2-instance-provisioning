@@ -21,9 +21,9 @@ module "spot_instance" {
 
   name = "Ec2-Spot"
 
-  ami           = var.ami_id
+  ami            = var.ami_id
   instance_types = var.instance_types
-  key_name      = var.key_name
+  key_name       = var.key_name
 
   subnet_id = element(data.aws_subnets.default.ids, 0)
 
