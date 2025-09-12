@@ -17,7 +17,7 @@ data "aws_subnets" "default" {
 # Use AWS EC2 module
 module "spot_instance" {
   source  = "terraform-aws-modules/ec2-instance/aws"
-  version = "~> 5.0"
+  version = "~> 4.0"
 
   name = "Ec2-Spot"
 
@@ -31,7 +31,12 @@ module "spot_instance" {
 
   vpc_security_group_ids = [module.security_group.security_group_id]
 
-  spot_price = "0.06"
+  instance_market_options = [{
+    market_type = "spot"
+    spot_options = {
+      max_price = "0.04"
+    }
+  }]
 
   tags = {
     Environment = var.environment
