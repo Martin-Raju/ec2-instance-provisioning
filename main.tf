@@ -40,7 +40,7 @@ module "spot_instance" {
 }
 
 # Security Group module
-module "sg" {
+module "security-group" {
   source  = "terraform-aws-modules/security-group/aws"
   version = "~> 5.0"
 
