@@ -31,14 +31,7 @@ module "spot_instance" {
 
   vpc_security_group_ids = [module.security_group.security_group_id]
 
-  instance_market_options {
-    market_type = "spot"
-
-    spot_options {
-      max_price = var.max_spot_price
-    }
-
-  }
+  spot_price = 0.06
 
   tags = {
     Environment = var.environment
