@@ -2,37 +2,7 @@ provider "aws" {
   region = var.aws_region
 }
 
-# -------------------------
-# Networking - Security Group
-# -------------------------
-resource "aws_security_group" "allow_ssh" {
-  name        = "allow_ssh"
-  description = "Allow SSH inbound traffic"
-  vpc_id      = data.aws_vpc.default.id
-
-  ingress {
-    description = "SSH"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] # Change to your IP for security
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "allow_ssh"
-  }
-}
-
-# -------------------------
-# Get default VPC and Subnet
-# -------------------------
+# Get default VPC and Subnets
 data "aws_vpc" "default" {
   default = true
 }
@@ -44,25 +14,57 @@ data "aws_subnets" "default" {
   }
 }
 
-# -------------------------
-# Spot Instance
-# -------------------------
-resource "aws_instance" "spot_worker" {
-  ami                    = var.ami_id
-  instance_type          = var.instance_type
-  subnet_id              = element(data.aws_subnets.default.ids, 0)
-  vpc_security_group_ids = [aws_security_group.allow_ssh.id]
-  key_name               = "test01"
+# Use AWS EC2 module
+module "spot_instance" {
+  source  = "terraform-aws-modules/ec2-instance/aws"
+  version = "~> 4.0"
 
-  # Request a Spot Instance
-  instance_market_options {
-    market_type = "spot"
-    spot_options {
-      max_price = var.max_spot_price
-    }
-  }
+  name = "Ec2-Spot"
+
+  ami           = var.ami_id
+  instance_type = var.instance_type
+  key_name      = var.key_name
+
+  subnet_id = element(data.aws_subnets.default.ids, 0)
+
+  associate_public_ip_address = true
+
+  vpc_security_group_ids = [module.sg.sg_id]
+
+  spot_price = var.max_spot_price
 
   tags = {
-    Name = "Ec2-Spot"
+    Environment = var.environment
+    Terraform   = "true"
   }
 }
+
+# Security Group module
+module "sg" {
+  source  = "terraform-aws-modules/security-group/aws"
+  version = "~> 5.0"
+
+  name        = "allow_ssh"
+  description = "Allow SSH inbound traffic"
+  vpc_id      = data.aws_vpc.default.id
+
+  ingress_with_cidr_blocks = [
+    {
+      from_port   = 22
+      to_port     = 22
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+      description = "SSH"
+    }
+  ]
+
+  egress_with_cidr_blocks = [
+    {
+      from_port   = 0
+      to_port     = 0
+      protocol    = "-1"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+  ]
+}
+
