@@ -17,7 +17,7 @@ data "aws_subnets" "default" {
 # Use AWS EC2 module
 module "spot_instance" {
   source  = "terraform-aws-modules/ec2-instance/aws"
-  version = "~> 4.0"
+  version = "~> 6.0"
 
   name = "Ec2-Spot"
 
