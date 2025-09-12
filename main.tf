@@ -31,13 +31,8 @@ module "spot_instance" {
 
   vpc_security_group_ids = [module.security_group.security_group_id]
 
-  instance_market_options = [{
-    market_type = "spot"
-    spot_options = {
-      max_price = "0.04"
-    }
-  }]
-
+  spot_price = var.max_spot_price
+  
   tags = {
     Environment = var.environment
     Terraform   = "true"
