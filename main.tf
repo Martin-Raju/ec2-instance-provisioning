@@ -30,13 +30,13 @@ module "spot_instance" {
   associate_public_ip_address = true
 
   vpc_security_group_ids = [module.security_group.security_group_id]
- 
-  instance_market_options {
-     market_type = "spot"
 
-  spot_options {
-     max_price = var.max_spot_price
-   }
+  instance_market_options {
+    market_type = "spot"
+
+    spot_options {
+      max_price = var.max_spot_price
+    }
 
   }
 
