@@ -16,7 +16,7 @@ data "aws_subnets" "default" {
 
 # Use AWS EC2 module
 module "spot_instance" {
-  for_each = toset(var.instance_type)
+  for_each = toset(var.instance_types)
   source   = "terraform-aws-modules/ec2-instance/aws"
   version  = "~> 4.0"
 

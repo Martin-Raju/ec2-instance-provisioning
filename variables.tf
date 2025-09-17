@@ -8,9 +8,9 @@ variable "ami_id" {
   type        = string
 }
 
-variable "instance_type" {
+variable "instance_types" {
   description = "EC2 instance type"
-  type        = string
+  type        = list(string)
 }
 
 variable "max_spot_price" {
