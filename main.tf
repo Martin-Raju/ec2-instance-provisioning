@@ -53,10 +53,6 @@ resource "aws_launch_template" "spot_lt" {
   instance_market_options {
     market_type = "spot"
   }
-
-  network_interfaces {
-    associate_public_ip_address = true
-  }
 }
 
 # --- Auto Scaling Group using the module ---
