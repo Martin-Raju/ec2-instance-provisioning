@@ -16,25 +16,27 @@ data "aws_subnets" "default" {
 
 # Use AWS EC2 module
 module "spot_instance" {
-  source  = "terraform-aws-modules/ec2-instance/aws"
-  version = "~> 4.0"
+  for_each = toset(var.instance_types)
+  source   = "terraform-aws-modules/ec2-instance/aws"
+  version  = "~> 4.0"
 
-  name = "Ec2-Spot"
+  name = "Ec2-Spot-${each.key}"
 
   ami           = var.ami_id
-  instance_type = var.instance_type
+  instance_type = each.value
   key_name      = var.key_name
 
-  subnet_id = element(data.aws_subnets.default.ids, 0)
-
+  subnet_id                   = element(data.aws_subnets.default.ids, 0)
   associate_public_ip_address = true
+  vpc_security_group_ids      = [module.security_group.security_group_id]
 
-  vpc_security_group_ids = [module.security_group.security_group_id]
-  create_spot_instance   = true
-  spot_price             = var.max_spot_price
+  # Spot settings
+  create_spot_instance = true
+  spot_price           = var.max_spot_price
   tags = {
-    Environment = var.environment
-    Terraform   = "true"
+    Environment  = var.environment
+    Terraform    = "true"
+    InstanceType = each.value
   }
 }
 
