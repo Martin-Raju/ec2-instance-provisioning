@@ -43,6 +43,15 @@ module "security_group" {
   ]
 }
 
+resource "aws_launch_template" "asg_lt" {
+  name_prefix                 = "asg-lt"
+  image_id                    = var.ami_id
+  instance_type               = var.instance_type
+  key_name                    = var.key_name
+  security_group_ids          = [module.security_group.security_group_id]
+  associate_public_ip_address = true
+}
+
 module "asg" {
   source  = "terraform-aws-modules/autoscaling/aws"
   version = "~> 7.0"
@@ -53,34 +62,16 @@ module "asg" {
   min_size            = 1
   max_size            = 4
 
-  # Launch template arguments
-  launch_template = {
-    name_prefix                 = "asg-lt"
-    image_id                    = var.ami_id
-    instance_type               = var.instance_type
-    key_name                    = var.key_name
-    security_groups             = [module.security_group.security_group_id]
-    associate_public_ip_address = true
-  }
   mixed_instances_policy = {
     launch_template = {
       launch_template_specification = {
-        launch_template_id = module.launch_template.id
+        launch_template_id = aws_launch_template.asg_lt.id
         version            = "$Latest"
       }
-
-      override = [
-        for itype in var.instance_type : {
-          instance_type = itype
-        }
-      ]
     }
-
     instances_distribution = {
-      on_demand_base_capacity                  = 1
-      on_demand_percentage_above_base_capacity = 25
-      spot_allocation_strategy                 = "lowest-price"
-      spot_max_price                           = var.max_spot_price
+      on_demand_percentage_above_base_capacity = 50
+      spot_allocation_strategy                 = "capacity-optimized"
     }
   }
 
