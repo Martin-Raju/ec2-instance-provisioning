@@ -81,4 +81,5 @@ module "asg" {
     Name        = "spot-asg-instance"
     Environment = var.environment
   }
+  create_launch_template = false
 }
