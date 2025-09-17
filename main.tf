@@ -33,7 +33,6 @@ module "spot_instance" {
   # Spot settings
   create_spot_instance = true
   spot_price           = var.max_spot_price
-  wait_for_fulfillment = true
   tags = {
     Environment  = var.environment
     Terraform    = "true"
