@@ -10,7 +10,7 @@ variable "ami_id" {
 
 variable "instance_type" {
   description = "EC2 instance type"
-  type        = list(string)
+  type        = string
 }
 
 variable "max_spot_price" {
