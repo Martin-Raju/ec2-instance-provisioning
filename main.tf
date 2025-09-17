@@ -62,7 +62,7 @@ resource "aws_launch_template" "spot_lt" {
 # --- Auto Scaling Group using the module ---
 module "asg" {
   source  = "terraform-aws-modules/autoscaling/aws"
-  version = "~> 7.0"
+  version = "~> 8.0"
 
   name                = "spot-asg"
   vpc_zone_identifier = data.aws_subnets.default.ids
@@ -77,7 +77,7 @@ module "asg" {
         version            = "$Latest"
       }
       overrides = [
-        { instance_type = "t3.micro" }
+        { instance_type = var.instance_type }
       ]
     }
     instances_distribution = {
