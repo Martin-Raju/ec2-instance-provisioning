@@ -32,7 +32,7 @@ module "spot_instance" {
   vpc_security_group_ids = [module.security_group.security_group_id]
 
   spot_price = var.max_spot_price
-
+  spot_type  = "persistent"
   tags = {
     Environment = var.environment
     Terraform   = "true"
