@@ -46,7 +46,6 @@ module "security_group" {
 resource "aws_launch_template" "asg_lt" {
   name_prefix            = "asg-lt"
   image_id               = var.ami_id
-  instance_type          = var.instance_type
   key_name               = var.key_name
   vpc_security_group_ids = [module.security_group.security_group_id]
   network_interfaces {
