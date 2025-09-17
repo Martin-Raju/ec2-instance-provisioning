@@ -32,7 +32,6 @@ module "spot_instance" {
   vpc_security_group_ids         = [module.security_group.security_group_id]
   create_spot_instance           = true
   spot_price                     = var.max_spot_price
-  instance_interruption_behavior = "stop"
   tags = {
     Environment = var.environment
     Terraform   = "true"
