@@ -48,7 +48,7 @@ resource "aws_launch_template" "asg_lt" {
   image_id               = var.ami_id
   instance_type          = var.instance_type
   key_name               = var.key_name
-  vpc_security_group_ids = [module.security_group.this_security_group_id]
+  vpc_security_group_ids = [module.security_group.security_group_id]
   network_interfaces {
     associate_public_ip_address = true
   }
@@ -82,9 +82,7 @@ module "asg" {
 
   tags = [
     {
-      key                 = "Environment"
-      value               = var.environment
-      propagate_at_launch = true
+      Environment = var.environment
     }
   ]
 }
