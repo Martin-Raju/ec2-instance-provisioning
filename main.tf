@@ -70,8 +70,21 @@ module "asg" {
   max_size            = var.asg_max_size
   desired_capacity    = var.asg_desired_capacity
 
-  launch_template_id      = aws_launch_template.spot_lt.id
-  launch_template_version = "$Latest"
+  mixed_instances_policy = {
+    launch_template = {
+      launch_template_specification = {
+        launch_template_id = aws_launch_template.spot_lt.id
+        version            = "$Latest"
+      }
+      overrides = [
+        { instance_type = "t3.micro" }
+      ]
+    }
+    instances_distribution = {
+      on_demand_percentage_above_base_capacity = 0
+      spot_allocation_strategy                 = "capacity-optimized"
+    }
+  }
 
   health_check_type         = "EC2"
   health_check_grace_period = 300
