@@ -43,22 +43,23 @@ module "security_group" {
   ]
 }
 
-# Launch Template
-module "launch_template" {
-  source  = "terraform-aws-modules/ec2-instance/aws//modules/launch-template"
-  version = "~> 4.0"
+module "asg" {
+  source  = "terraform-aws-modules/autoscaling/aws"
+  version = "~> 7.0"
 
-  name          = "asg-lt"
-  image_id      = var.ami_id
-  instance_type = var.instance_type
-  key_name      = var.key_name
+  name                = "mixed-asg"
+  vpc_zone_identifier = data.aws_subnets.default.ids
+  desired_capacity    = 2
+  min_size            = 1
+  max_size            = 4
 
-  vpc_security_group_ids      = [module.security_group.security_group_id]
-  associate_public_ip_address = true
-
-  tags = {
-    Environment = var.environment
-    Terraform   = "true"
+  # Launch template arguments
+  launch_template = {
+    name_prefix                 = "asg-lt"
+    image_id                    = var.ami_id
+    instance_type               = var.instance_type
+    key_name                    = var.key_name
+    security_groups             = [module.security_group.security_group_id]
+    associate_public_ip_address = true
   }
 }
-
