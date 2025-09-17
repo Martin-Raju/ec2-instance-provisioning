@@ -70,6 +70,11 @@ module "asg" {
         launch_template_id = aws_launch_template.asg_lt.id
         version            = "$Latest"
       }
+      override = [
+        for itype in var.instance_types : {
+          instance_type = itype
+        }
+      ]
     }
     instances_distribution = {
       on_demand_percentage_above_base_capacity = 50
