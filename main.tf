@@ -16,12 +16,11 @@ data "aws_subnets" "default" {
 
 # Security Group
 module "security_group" {
-  source                 = "terraform-aws-modules/security-group/aws"
-  version                = "~> 5.0"
-  create_launch_template = false
-  name                   = "allow_ssh"
-  description            = "Allow SSH inbound traffic"
-  vpc_id                 = data.aws_vpc.default.id
+  source      = "terraform-aws-modules/security-group/aws"
+  version     = "~> 5.0"
+  name        = "allow_ssh"
+  description = "Allow SSH inbound traffic"
+  vpc_id      = data.aws_vpc.default.id
 
   ingress_with_cidr_blocks = [
     {
@@ -58,14 +57,14 @@ resource "aws_launch_template" "asg_lt" {
 
 # Auto Scaling Group with Mixed Instances Policy
 module "asg" {
-  source  = "terraform-aws-modules/autoscaling/aws"
-  version = "~> 7.0"
-
-  name                = "mixed-asg"
-  vpc_zone_identifier = data.aws_subnets.default.ids
-  min_size            = var.asg_min_size
-  max_size            = var.asg_max_size
-  desired_capacity    = var.asg_desired_capacity
+  source                 = "terraform-aws-modules/autoscaling/aws"
+  version                = "~> 7.0"
+  create_launch_template = false
+  name                   = "mixed-asg"
+  vpc_zone_identifier    = data.aws_subnets.default.ids
+  min_size               = var.asg_min_size
+  max_size               = var.asg_max_size
+  desired_capacity       = var.asg_desired_capacity
 
   mixed_instances_policy = {
     launch_template = {
