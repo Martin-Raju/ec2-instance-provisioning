@@ -69,27 +69,15 @@ module "asg" {
   max_size            = var.asg_max_size
   desired_capacity    = var.asg_desired_capacity
 
-  mixed_instances_policy = {
-    launch_template = {
-      launch_template_specification = {
-        launch_template_id = aws_launch_template.spot_lt.id
-        version            = "$Latest"
-      }
-      overrides = [
-        { instance_type = var.default_instance_type }
-      ]
-    }
-    instances_distribution = {
-      on_demand_percentage_above_base_capacity = 0
-      spot_allocation_strategy                 = "capacity-optimized"
-    }
-  }
+# --- Use existing launch template ---
+  launch_template_id      = aws_launch_template.spot_lt.id
+  launch_template_version = "$Latest"
 
   health_check_type         = "EC2"
   health_check_grace_period = 300
 
   tags = {
     Name        = "spot-asg-instance"
-    Environment = "dev"
+    Environment = var.environment
   }
 }
