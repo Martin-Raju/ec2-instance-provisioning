@@ -69,7 +69,7 @@ module "asg" {
   max_size            = var.asg_max_size
   desired_capacity    = var.asg_desired_capacity
 
-# --- Use existing launch template ---
+  # --- Use existing launch template ---
   launch_template_id      = aws_launch_template.spot_lt.id
   launch_template_version = "$Latest"
 
