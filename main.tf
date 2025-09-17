@@ -28,7 +28,7 @@ module "security_group" {
       from_port   = 22
       to_port     = 22
       protocol    = "tcp"
-      cidr_blocks = "0.0.0.0/0"
+      cidr_blocks = ["0.0.0.0/0"]
       description = "SSH"
     }
   ]
@@ -38,30 +38,34 @@ module "security_group" {
       from_port   = 0
       to_port     = 0
       protocol    = "-1"
-      cidr_blocks = "0.0.0.0/0"
+      cidr_blocks = ["0.0.0.0/0"]
     }
   ]
 }
 
+# Launch Template
 resource "aws_launch_template" "asg_lt" {
   name_prefix            = "asg-lt"
   image_id               = var.ami_id
+  instance_type          = var.default_instance_type
   key_name               = var.key_name
   vpc_security_group_ids = [module.security_group.security_group_id]
+
   network_interfaces {
     associate_public_ip_address = true
   }
 }
 
+# Auto Scaling Group with Mixed Instances Policy
 module "asg" {
   source  = "terraform-aws-modules/autoscaling/aws"
   version = "~> 7.0"
 
   name                = "mixed-asg"
   vpc_zone_identifier = data.aws_subnets.default.ids
-  desired_capacity    = 2
-  min_size            = 1
-  max_size            = 4
+  min_size            = var.asg_min_size
+  max_size            = var.asg_max_size
+  desired_capacity    = var.asg_desired_capacity
 
   mixed_instances_policy = {
     launch_template = {
@@ -69,13 +73,14 @@ module "asg" {
         launch_template_id = aws_launch_template.asg_lt.id
         version            = "$Latest"
       }
+
       overrides = [
-        { instance_type = "t3.medium" },
-        { instance_type = "t3.large" }
+        for itype in var.instance_types : { instance_type = itype }
       ]
     }
+
     instances_distribution = {
-      on_demand_percentage_above_base_capacity = 50
+      on_demand_percentage_above_base_capacity = var.on_demand_percentage_above_base_capacity
       spot_allocation_strategy                 = "capacity-optimized"
     }
   }
@@ -86,4 +91,18 @@ module "asg" {
   tags = {
     Environment = var.environment
   }
+
+  scaling_policies = [
+    {
+      name                      = "cpu-target-tracking"
+      policy_type               = "TargetTrackingScaling"
+      estimated_instance_warmup = 120
+      target_tracking_configuration = {
+        predefined_metric_specification = {
+          predefined_metric_type = "ASGAverageCPUUtilization"
+        }
+        target_value = var.cpu_target_value
+      }
+    }
+  ]
 }
