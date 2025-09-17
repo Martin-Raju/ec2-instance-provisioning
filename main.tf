@@ -77,7 +77,7 @@ module "asg" {
         version            = "$Latest"
       }
       overrides = [
-        { instance_type = var.instance_type }
+        { instance_type = var.instance_types }
       ]
     }
     instances_distribution = {
