@@ -2,16 +2,13 @@
 # Output
 # -------------------------
 
-output "spot_ids" {
-  description = "EC2 instance IDs or Spot Request IDs depending on state"
-  value = {
-    for k, m in module.spot_instance : k => m.id
-  }
+# Get public IPs of instances in the ASG
+data "aws_instances" "asg_instances" {
+  instance_ids = data.aws_autoscaling_group.asg_info.instances[*].id
 }
 
 output "instance_public_ips" {
-  description = "Public IPs of the instances"
-  value = {
-    for k, m in module.spot_instance : k => m.public_ip
-  }
+  description = "Public IP addresses of instances in the ASG"
+  value       = data.aws_instances.asg_instances.public_ips
 }
+

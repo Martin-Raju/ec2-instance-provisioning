@@ -2,7 +2,7 @@ provider "aws" {
   region = var.aws_region
 }
 
-# Get default VPC and Subnets
+# Default VPC & Subnets
 data "aws_vpc" "default" {
   default = true
 }
@@ -14,33 +14,7 @@ data "aws_subnets" "default" {
   }
 }
 
-# Use AWS EC2 module
-module "spot_instance" {
-  for_each = toset(var.instance_types)
-  source   = "terraform-aws-modules/ec2-instance/aws"
-  version  = "~> 4.0"
-
-  name = "Ec2-Spot-${each.key}"
-
-  ami           = var.ami_id
-  instance_type = each.value
-  key_name      = var.key_name
-
-  subnet_id                   = element(data.aws_subnets.default.ids, 0)
-  associate_public_ip_address = true
-  vpc_security_group_ids      = [module.security_group.security_group_id]
-
-  # Spot settings
-  create_spot_instance = true
-  spot_price           = var.max_spot_price
-  tags = {
-    Environment  = var.environment
-    Terraform    = "true"
-    InstanceType = each.value
-  }
-}
-
-# Security Group module
+# Security Group
 module "security_group" {
   source  = "terraform-aws-modules/security-group/aws"
   version = "~> 5.0"
@@ -54,7 +28,7 @@ module "security_group" {
       from_port   = 22
       to_port     = 22
       protocol    = "tcp"
-      cidr_blocks = "0.0.0.0/0"
+      cidr_blocks = ["0.0.0.0/0"]
       description = "SSH"
     }
   ]
@@ -64,8 +38,27 @@ module "security_group" {
       from_port   = 0
       to_port     = 0
       protocol    = "-1"
-      cidr_blocks = "0.0.0.0/0"
+      cidr_blocks = ["0.0.0.0/0"]
     }
   ]
+}
+
+# Launch Template
+module "launch_template" {
+  source  = "terraform-aws-modules/ec2-instance/aws//modules/launch-template"
+  version = "~> 4.0"
+
+  name          = "asg-lt"
+  image_id      = var.ami_id
+  instance_type = var.instance_type
+  key_name      = var.key_name
+
+  vpc_security_group_ids      = [module.security_group.security_group_id]
+  associate_public_ip_address = true
+
+  tags = {
+    Environment = var.environment
+    Terraform   = "true"
+  }
 }
 
