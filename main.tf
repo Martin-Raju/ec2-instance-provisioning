@@ -29,9 +29,9 @@ module "spot_instance" {
 
   associate_public_ip_address = true
 
-  vpc_security_group_ids         = [module.security_group.security_group_id]
-  create_spot_instance           = true
-  spot_price                     = var.max_spot_price
+  vpc_security_group_ids = [module.security_group.security_group_id]
+  create_spot_instance   = true
+  spot_price             = var.max_spot_price
   tags = {
     Environment = var.environment
     Terraform   = "true"
