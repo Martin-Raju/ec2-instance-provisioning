@@ -42,13 +42,17 @@ module "security_group" {
   ]
 }
 
-# Launch Template
-resource "aws_launch_template" "asg_lt" {
-  name_prefix            = "asg-lt"
+# --- Launch Template (Spot Instances) ---
+resource "aws_launch_template" "spot_lt" {
+  name_prefix            = "spot-lt"
   image_id               = var.ami_id
   instance_type          = var.default_instance_type
   key_name               = var.key_name
   vpc_security_group_ids = [module.security_group.security_group_id]
+
+  instance_market_options {
+    market_type = "spot"
+  }
 
   network_interfaces {
     associate_public_ip_address = true
