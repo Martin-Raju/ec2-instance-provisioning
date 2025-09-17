@@ -70,10 +70,9 @@ module "asg" {
         launch_template_id = aws_launch_template.asg_lt.id
         version            = "$Latest"
       }
-      override = [
-        for itype in var.instance_type : {
-          instance_type = itype
-        }
+      overrides = [
+        { instance_type = "t3.medium" },
+        { instance_type = "t3.large" }
       ]
     }
     instances_distribution = {
