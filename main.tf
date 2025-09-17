@@ -80,7 +80,7 @@ module "asg" {
   health_check_type         = "EC2"
   health_check_grace_period = 300
 
-tags = {
-  Environment = var.environment
- }
+  tags = {
+    Environment = var.environment
+  }
 }
