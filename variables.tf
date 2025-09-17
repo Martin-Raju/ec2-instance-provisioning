@@ -39,7 +39,7 @@ variable "instance_types" {
 }
 
 variable "default_instance_type" {
-  description = "Default instance type for Launch Template (must be in instance_types)"
+  description = "Default instance type for Launch Template "
   type        = string
 }
 
