@@ -70,10 +70,8 @@ module "asg" {
   max_size            = var.asg_max_size
   desired_capacity    = var.asg_desired_capacity
 
-  launch_template = {
-    id      = aws_launch_template.spot_lt.id
-    version = "$Latest"
-  }
+  launch_template_id      = aws_launch_template.spot_lt.id
+  launch_template_version = "$Latest"
 
   health_check_type         = "EC2"
   health_check_grace_period = 300
