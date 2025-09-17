@@ -16,12 +16,12 @@ data "aws_subnets" "default" {
 
 # Security Group
 module "security_group" {
-  source  = "terraform-aws-modules/security-group/aws"
-  version = "~> 5.0"
+  source                 = "terraform-aws-modules/security-group/aws"
+  version                = "~> 5.0"
   create_launch_template = false
-  name        = "allow_ssh"
-  description = "Allow SSH inbound traffic"
-  vpc_id      = data.aws_vpc.default.id
+  name                   = "allow_ssh"
+  description            = "Allow SSH inbound traffic"
+  vpc_id                 = data.aws_vpc.default.id
 
   ingress_with_cidr_blocks = [
     {
