@@ -71,7 +71,7 @@ module "asg" {
         version            = "$Latest"
       }
       override = [
-        for itype in var.instance_types : {
+        for itype in var.instance_type : {
           instance_type = itype
         }
       ]
