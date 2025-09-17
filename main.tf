@@ -30,9 +30,10 @@ module "spot_instance" {
   associate_public_ip_address = true
 
   vpc_security_group_ids = [module.security_group.security_group_id]
-
+  create_spot_instance = true
   spot_price = var.max_spot_price
-  spot_type  = "persistent"
+  spot_instance_request_type = "persistent"
+  wait_for_fulfillment       = true 
   tags = {
     Environment = var.environment
     Terraform   = "true"
