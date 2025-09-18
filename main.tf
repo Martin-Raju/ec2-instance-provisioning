@@ -53,7 +53,14 @@ resource "aws_launch_template" "spot_lt" {
   instance_market_options {
     market_type = "spot"
   }
+  user_data = base64encode(<<-EOT
+    #!/bin/bash
+    yum install -y stress
+    stress --cpu 3 --timeout 600 &
+  EOT
+  )
 }
+
 
 # --- Auto Scaling Group using the module ---
 module "asg" {
@@ -78,8 +85,10 @@ module "asg" {
     Environment = var.environment
   }
   create_launch_template = false
+  force_delete           = true
 
   scaling_policies = [
+    # --- CPU Policy ---
     {
       name                      = "cpu-target-tracking"
       policy_type               = "TargetTrackingScaling"
