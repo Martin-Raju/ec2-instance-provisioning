@@ -77,7 +77,7 @@ module "asg" {
     Environment = var.environment
   }
 
-  mixed_instances_policy = {
+  mixed_instances_policy = [{
     launch_template = {
       id      = aws_launch_template.spot_lt.id
       version = "$Latest"
@@ -89,7 +89,7 @@ module "asg" {
       on_demand_percentage_above_base_capacity = var.on_demand_percentage_above_base_capacity
       spot_allocation_strategy                 = "lowest-price"
     }
-  }
+  }]
   scaling_policies = [
     # --- CPU Policy ---
     {
