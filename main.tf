@@ -78,7 +78,7 @@ module "asg" {
   # Mixed Instances Policy
   mixed_instances_policy = {
     launch_template = {
-      version   = "Latest"
+      version   = "$Latest"
       overrides = [for itype in var.instance_types : { instance_type = itype }]
     }
     instances_distribution = {
