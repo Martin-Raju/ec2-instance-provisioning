@@ -83,6 +83,7 @@ module "asg" {
       on_demand_percentage_above_base_capacity = var.on_demand_percentage_above_base_capacity
       spot_allocation_strategy                 = "lowest-price"
     }
+    instances = var.instance_types
   }
   scaling_policies = [
     {
