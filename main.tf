@@ -62,11 +62,12 @@ module "asg" {
   }
 
   # --- Launch Template parameters ---
-  create_launch_template = true
-  force_delete           = true
-  launch_template_name   = "spot-lt"
-  image_id               = var.ami_id
-  key_name               = var.key_name
+  create_launch_template                 = true
+  force_delete                           = true
+  launch_template_name                   = "spot-lt"
+  image_id                               = var.ami_id
+  key_name                               = var.key_name
+  launch_template_vpc_security_group_ids = [module.security_group.security_group_id]
   user_data = base64encode(<<-EOT
     #!/bin/bash
     yum install -y stress
