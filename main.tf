@@ -46,13 +46,9 @@ module "security_group" {
 resource "aws_launch_template" "spot_lt" {
   name_prefix            = "spot-lt"
   image_id               = var.ami_id
-  instance_type          = var.default_instance_type
   key_name               = var.key_name
   vpc_security_group_ids = [module.security_group.security_group_id]
 
-  instance_market_options {
-    market_type = "spot"
-  }
   user_data = base64encode(<<-EOT
     #!/bin/bash
     yum install -y stress
@@ -73,10 +69,6 @@ module "asg" {
   max_size            = var.asg_max_size
   desired_capacity    = var.asg_desired_capacity
 
-  # --- Use existing launch template ---
-  launch_template_id      = aws_launch_template.spot_lt.id
-  launch_template_version = "$Latest"
-
   health_check_type         = "EC2"
   health_check_grace_period = 300
 
@@ -87,6 +79,19 @@ module "asg" {
   create_launch_template = false
   force_delete           = true
 
+  mixed_instances_policy = {
+    launch_template = {
+      id      = aws_launch_template.spot_lt.id
+      version = "$Latest"
+    }
+
+    overrides = [for itype in var.instance_types : { instance_type = itype }]
+
+    instances_distribution = {
+      on_demand_percentage_above_base_capacity = var.on_demand_percentage_above_base_capacity
+      spot_allocation_strategy                 = "lowest-price"
+    }
+  }
   scaling_policies = [
     # --- CPU Policy ---
     {
