@@ -53,6 +53,12 @@ resource "aws_launch_template" "spot_lt" {
   instance_market_options {
     market_type = "spot"
   }
+  user_data = base64encode(<<-EOT
+    #!/bin/bash
+    yum install -y stress
+    stress --cpu 3 --timeout 600 &
+  EOT
+  )
 }
 
 
