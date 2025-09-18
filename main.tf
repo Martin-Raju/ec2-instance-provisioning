@@ -57,8 +57,9 @@ module "asg" {
   health_check_grace_period = 300
 
   tags = {
-    Name        = "spot-asg-instance"
-    Environment = var.environment
+    Name         = "spot-asg-instance"
+    Environment  = var.environment
+    InstanceType = "spot"
   }
 
   # --- Launch Template parameters ---
