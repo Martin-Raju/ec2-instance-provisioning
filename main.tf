@@ -77,13 +77,13 @@ module "asg" {
   mixed_instances_policy = {
     launch_template = {
       version = "Latest"
+      instance_types = var.instance_types
     }
     instances_distribution = {
       base_capacity                            = 1
       on_demand_percentage_above_base_capacity = var.on_demand_percentage_above_base_capacity
       spot_allocation_strategy                 = "lowest-price"
     }
-    instances = var.instance_types
   }
   scaling_policies = [
     {
