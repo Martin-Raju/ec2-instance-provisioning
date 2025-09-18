@@ -70,7 +70,7 @@ resource "aws_launch_template" "spot_lt" {
       },
       "metrics": {
         "append_dimensions": {
-          "AutoScalingGroupName": "${aws_autoscaling_group.spot_asg.name}" 
+          "AutoScalingGroupName": "spot-asg" 
         },
         "metrics_collected": {
           "mem": {
