@@ -79,6 +79,7 @@ module "asg" {
     Environment = var.environment
   }
   create_launch_template = false
+  force_delete           = true
 
   scaling_policies = [
     # --- CPU Policy ---
