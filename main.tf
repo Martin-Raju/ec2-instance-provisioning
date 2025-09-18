@@ -73,7 +73,6 @@ module "asg" {
     stress --cpu 3 --timeout 600 &
   EOT
   )
-  instance_types = var.instance_types
   # Mixed Instances Policy
   mixed_instances_policy = {
     launch_template = {
