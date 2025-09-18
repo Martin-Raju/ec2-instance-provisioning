@@ -80,7 +80,8 @@ module "asg" {
       version = "Latest"
     }
     instances_distribution = {
-      on_demand_percentage_above_base_capacity = var.on_demand_percentage_above_base_capacity
+      base_capacity                            = 1
+      on_demand_percentage_above_base_capacity = 0
       spot_allocation_strategy                 = "lowest-price"
     }
   }
