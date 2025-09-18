@@ -84,10 +84,10 @@ module "asg" {
       spot_allocation_strategy                 = "capacity-optimized"
     }
     override = [
-     { instance_type = "t3.micro" },
-     { instance_type = "t3a.micro" },
-     { instance_type = "t2.micro" }
-  ]
+      { instance_type = "t3.micro" },
+      { instance_type = "t3a.micro" },
+      { instance_type = "t2.micro" }
+    ]
   }
   scaling_policies = [
     {
