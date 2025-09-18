@@ -77,7 +77,7 @@ module "asg" {
   # Mixed Instances Policy
   mixed_instances_policy = {
     launch_template = {
-      version        = "Latest"
+      version = "Latest"
     }
     instances_distribution = {
       base_capacity                            = 1
