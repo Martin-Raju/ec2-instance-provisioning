@@ -40,7 +40,7 @@ variable "instance_types" {
 
 variable "default_instance_type" {
   description = "Default instance type for Launch Template "
-  type        = list(any)
+  type        = string
 }
 
 variable "on_demand_percentage_above_base_capacity" {
