@@ -90,7 +90,7 @@ module "asg" {
         predefined_metric_specification = {
           predefined_metric_type = "ASGAverageCPUUtilization"
         }
-        target_value = 40
+        target_value = var.cpu_target_value
       }
     }
   ]

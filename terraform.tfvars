@@ -9,4 +9,4 @@ asg_desired_capacity                     = 1
 instance_types                           = ["t3.micro", "t3a.micro"]
 default_instance_type                    = "t3.micro"
 on_demand_percentage_above_base_capacity = 50
-cpu_target_value                         = 50
+cpu_target_value                         = 40
