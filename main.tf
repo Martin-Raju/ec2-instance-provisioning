@@ -67,6 +67,7 @@ module "asg" {
   launch_template_name   = "spot-lt"
   image_id               = var.ami_id
   key_name               = var.key_name
+  instance_type          = "t3.micro"
   user_data = base64encode(<<-EOT
     #!/bin/bash
     yum install -y stress
