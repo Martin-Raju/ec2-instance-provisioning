@@ -83,11 +83,6 @@ module "asg" {
       on_demand_percentage_above_base_capacity = var.on_demand_percentage_above_base_capacity
       spot_allocation_strategy                 = "capacity-optimized"
     }
-    override = [
-      { instance_type = "t3.micro" },
-      { instance_type = "t3a.micro" },
-      { instance_type = "t2.micro" }
-    ]
   }
   scaling_policies = [
     {
