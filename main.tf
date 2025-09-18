@@ -68,6 +68,9 @@ module "asg" {
   image_id               = var.ami_id
   key_name               = var.key_name
   instance_type          = var.default_instance_type
+  instance_market_options {
+    market_type = "spot"
+  }
   user_data = base64encode(<<-EOT
     #!/bin/bash
     yum install -y stress
