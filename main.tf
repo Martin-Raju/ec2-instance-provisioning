@@ -64,21 +64,21 @@ module "asg" {
   create_launch_template = true
   force_delete           = true
 
-  # Launch Template parameters
-  launch_template_name   = "spot-lt"
-  image_id               = var.ami_id
-  key_name               = var.key_name
-  vpc_security_group_ids = [module.security_group.security_group_id]
-
-  user_data = base64encode(<<-EOT
-    #!/bin/bash
-    yum install -y stress
-    stress --cpu 3 --timeout 600 &
-  EOT
-  )
-
+  # Launch Template configuration
+  launch_template = {
+    name_prefix            = "spot-lt"
+    image_id               = var.ami_id
+    key_name               = var.key_name
+    vpc_security_group_ids = [module.security_group.security_group_id]
+    user_data = base64encode(<<-EOT
+      #!/bin/bash
+      yum install -y stress
+      stress --cpu 3 --timeout 600 &
+    EOT
+    )
+  }
   # Mixed Instances Policy
-  mixed_instances_policy = [{
+  mixed_instances_policy = {
     launch_template = {
       version = "$Latest"
     }
@@ -88,9 +88,8 @@ module "asg" {
       on_demand_percentage_above_base_capacity = var.on_demand_percentage_above_base_capacity
       spot_allocation_strategy                 = "lowest-price"
     }
-  }]
+  }
   scaling_policies = [
-    # --- CPU Policy ---
     {
       name                      = "cpu-target-tracking"
       policy_type               = "TargetTrackingScaling"
