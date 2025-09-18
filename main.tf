@@ -78,7 +78,6 @@ module "asg" {
     launch_template = {
       version = "Latest"
     }
-    overrides = [for itype in var.instance_types : { instance_type = itype }]
     instances_distribution = {
       base_capacity                            = 1
       on_demand_percentage_above_base_capacity = var.on_demand_percentage_above_base_capacity
