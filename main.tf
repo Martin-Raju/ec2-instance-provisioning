@@ -76,8 +76,6 @@ module "asg" {
     Name        = "spot-asg-instance"
     Environment = var.environment
   }
-  create_launch_template = false
-  force_delete           = true
 
   mixed_instances_policy = {
     launch_template = {
