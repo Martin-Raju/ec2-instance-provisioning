@@ -67,18 +67,19 @@ module "asg" {
   launch_template_name   = "spot-lt"
   image_id               = var.ami_id
   key_name               = var.key_name
-  vpc_security_group_ids = [module.security_group.security_group_id]
   user_data = base64encode(<<-EOT
     #!/bin/bash
     yum install -y stress
     stress --cpu 3 --timeout 600 &
   EOT
   )
-
+  launch_template = {
+    vpc_security_group_ids = [module.security_group.security_group_id]
+  }
   # Mixed Instances Policy
   mixed_instances_policy = {
     launch_template = {
-      version = "$Latest"
+      version = "Latest"
     }
     overrides = [for itype in var.instance_types : { instance_type = itype }]
     instances_distribution = {
