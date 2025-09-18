@@ -53,45 +53,6 @@ resource "aws_launch_template" "spot_lt" {
   instance_market_options {
     market_type = "spot"
   }
-
-  # --- Add CloudWatch Agent Setup ---
-  user_data = base64encode(<<-EOF
-    #!/bin/bash
-    # Update system and install CloudWatch Agent
-    yum update -y
-    yum install -y amazon-cloudwatch-agent
-
-    # Create CloudWatch Agent config for MemoryUtilization
-    cat > /opt/aws/amazon-cloudwatch-agent/bin/config.json << 'EOC'
-    {
-      "agent": {
-        "metrics_collection_interval": 60,
-        "run_as_user": "root"
-      },
-      "metrics": {
-        "append_dimensions": {
-          "AutoScalingGroupName": "spot-asg" 
-        },
-        "metrics_collected": {
-          "mem": {
-            "measurement": [
-              {"name": "mem_used_percent", "rename": "MemoryUtilization", "unit": "Percent"}
-            ],
-            "metrics_collection_interval": 60
-          }
-        }
-      }
-    }
-    EOC
-
-    # Start the CloudWatch Agent
-    /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
-      -a fetch-config \
-      -m ec2 \
-      -c file:/opt/aws/amazon-cloudwatch-agent/bin/config.json \
-      -s
-  EOF
-  )
 }
 
 
@@ -131,25 +92,6 @@ module "asg" {
         }
         target_value = 40
       }
-    },
-    # --- Memory Policy ---
-    {
-      name                      = "memory-target-tracking"
-      policy_type               = "TargetTrackingScaling"
-      estimated_instance_warmup = 120
-      target_tracking_configuration = {
-        customized_metric_specification = {
-          metric_name = "MemoryUtilization"
-          namespace   = "CWAgent"
-          statistic   = "Average"
-          unit        = "Percent"
-          dimensions = {
-            AutoScalingGroupName = "spot-asg"
-          }
-        }
-        target_value = 60 # Target average memory utilization %
-      }
     }
   ]
-
 }
