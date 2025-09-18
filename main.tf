@@ -77,12 +77,8 @@ module "asg" {
   # Mixed Instances Policy
   mixed_instances_policy = {
     launch_template = {
-      version = "Latest"
-      overrides = [
-        { instance_type = "t3.micro" },
-        { instance_type = "t3a.micro" },
-        { instance_type = "t2.micro" }
-      ]
+      version   = "Latest"
+      overrides = [for itype in var.instance_types : { instance_type = itype }]
     }
     instances_distribution = {
       base_capacity                            = 0
