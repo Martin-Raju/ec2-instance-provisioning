@@ -80,14 +80,9 @@ module "asg" {
   mixed_instances_policy = {
     launch_template = {
       launch_template_specification = {
-        launch_template_name = "spot-lt" # refers to the LT created above
+        launch_template_name = "spot-lt"
         version              = "$Latest"
       }
-      overrides = [
-        { instance_type = "t3.medium" },
-        { instance_type = "t3.large" },
-        { instance_type = "t3a.medium" }
-      ]
     }
     instances_distribution = {
       base_capacity                            = 0
