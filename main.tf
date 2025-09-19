@@ -74,7 +74,7 @@ module "asg" {
   mixed_instances_policy = {
     instances_distribution = {
       base_capacity                            = 1
-      on_demand_percentage_above_base_capacity = 0
+      on_demand_percentage_above_base_capacity = 30
       spot_allocation_strategy                 = "capacity-optimized"
     }
 
