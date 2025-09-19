@@ -69,7 +69,7 @@ module "asg" {
   image_id               = var.ami_id
   key_name               = var.key_name
   instance_type          = var.default_instance_type
-  vpc_security_group_ids = [module.security_group.security_group_id]
+  security_groups        = [module.security_group.security_group_id]
 
   user_data = base64encode(<<-EOT
     #!/bin/bash
