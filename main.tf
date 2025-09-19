@@ -57,21 +57,20 @@ module "asg" {
   health_check_grace_period = 300
 
   # --- Launch Template parameters ---
-  create_launch_template = true
-  force_delete           = true
-  launch_template_name   = "spot-lt"
-  image_id               = var.ami_id
-  instance_type          = var.default_instance_type
-  key_name               = var.key_name
-  security_groups        = [module.security_group.security_group_id]
-
+  create_launch_template     = true
+  force_delete               = true
+  launch_template_name       = "spot-lt"
+  image_id                   = var.ami_id
+  instance_type              = var.default_instance_type
+  key_name                   = var.key_name
+  security_groups            = [module.security_group.security_group_id]
+  use_mixed_instances_policy = true
   user_data = base64encode(<<-EOT
     #!/bin/bash
     yum install -y stress
     stress --cpu 3 --timeout 600 &
   EOT
   )
-
   mixed_instances_policy = {
     instances_distribution = {
       base_capacity                            = 1
@@ -82,13 +81,9 @@ module "asg" {
     launch_template = {
       launch_template_specification = {
         launch_template_name = "spot-lt"
+        launch_template_id   = aws_launch_template.example.id
         version              = "$Latest"
       }
-      overrides = [
-        { instance_type = "t3.micro" },
-        { instance_type = "t3a.micro" },
-        { instance_type = "t2.micro" }
-      ]
     }
   }
 
