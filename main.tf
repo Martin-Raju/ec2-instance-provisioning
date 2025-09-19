@@ -105,17 +105,8 @@ module "asg" {
       }
     }
   ]
-
-  tags = [
-    {
-      key                 = "Name"
-      value               = "spot-asg-instance"
-      propagate_at_launch = true
-    },
-    {
-      key                 = "Environment"
-      value               = var.environment
-      propagate_at_launch = true
-    }
-  ]
+  tags = {
+    Name        = "spot-asg-instance"
+    Environment = var.environment
+  }
 }
