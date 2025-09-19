@@ -33,10 +33,10 @@ variable "asg_desired_capacity" {
   type        = number
 }
 
-variable "instance_types" {
-  description = "List of instance types for the Mixed Instances ASG"
-  type        = list(string)
-}
+#variable "instance_types" {
+#  description = "List of instance types for the Mixed Instances ASG"
+#  type        = list(string)
+#}
 
 variable "default_instance_type" {
   description = "Default instance type for Launch Template "
