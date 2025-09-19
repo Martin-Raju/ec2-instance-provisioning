@@ -56,11 +56,18 @@ module "asg" {
   health_check_type         = "EC2"
   health_check_grace_period = 300
 
-  tags = {
-    Name        = "spot-asg-instance"
-    Environment = var.environment
-
-  }
+  tags = [
+    {
+      key                 = "Name"
+      value               = "spot-asg-instance"
+      propagate_at_launch = true
+    },
+    {
+      key                 = "Environment"
+      value               = var.environment
+      propagate_at_launch = true
+    }
+  ]
 
   # --- Launch Template parameters ---
   create_launch_template = true
@@ -80,7 +87,10 @@ module "asg" {
   # Mixed Instances Policy
   mixed_instances_policy = {
     launch_template = {
-      version   = "$Latest"
+      launch_template_specification = {
+        launch_template_name = "spot-lt" # refers to the LT created above
+        version              = "$Latest"
+      }
       overrides = [for itype in var.instance_types : { instance_type = itype }]
     }
     instances_distribution = {
