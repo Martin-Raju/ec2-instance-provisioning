@@ -61,9 +61,9 @@ module "asg" {
   force_delete           = true
   launch_template_name   = "spot-lt"
   image_id               = var.ami_id
-  instance_type          = var.default_instance_type # required for LT
+  instance_type          = var.default_instance_type
   key_name               = var.key_name
-  vpc_security_group_ids = [module.security_group.security_group_id]
+  security_groups        = [module.security_group.security_group_id]
 
   user_data = base64encode(<<-EOT
     #!/bin/bash
