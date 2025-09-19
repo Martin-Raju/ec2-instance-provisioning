@@ -80,8 +80,8 @@ module "asg" {
 
     launch_template = {
       launch_template_specification = {
-        launch_template_name = "spot-lt"
-        version              = "$Latest"
+        launch_template_id = module.asg.launch_template_id
+        version            = "$Latest"
       }
     }
   }
