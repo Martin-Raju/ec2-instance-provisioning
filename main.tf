@@ -67,8 +67,8 @@ module "asg" {
   launch_template_name   = "spot-lt"
   image_id               = var.ami_id
   key_name               = var.key_name
-  instance_type          = var.default_instance_type
-  security_groups        = [module.security_group.security_group_id]
+  #instance_type          = var.default_instance_type
+  security_groups = [module.security_group.security_group_id]
 
   user_data = base64encode(<<-EOT
     #!/bin/bash
@@ -89,6 +89,7 @@ module "asg" {
       base_capacity                            = 0
       on_demand_percentage_above_base_capacity = 0
       spot_allocation_strategy                 = "capacity-optimized"
+      spot_instance_pools                      = 4
     }
   }
   scaling_policies = [
