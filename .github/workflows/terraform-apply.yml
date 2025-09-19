@@ -3,7 +3,7 @@ name: Terraform EC2 Spot Instance Deployment
 on:
   push:
     branches:
-      - main
+      - develop
   pull_request:
 
 jobs:

@@ -86,6 +86,7 @@ module "asg" {
       base_capacity                            = 0
       on_demand_percentage_above_base_capacity = 0
       spot_allocation_strategy                 = "capacity-optimized"
+      spot_instance_pools                      = 4
     }
   }
   scaling_policies = [
