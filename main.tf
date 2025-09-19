@@ -56,18 +56,10 @@ module "asg" {
   health_check_type         = "EC2"
   health_check_grace_period = 300
 
-  tags = [
-    {
-      key                 = "Name"
-      value               = "spot-asg-instance"
-      propagate_at_launch = true
-    },
-    {
-      key                 = "Environment"
-      value               = var.environment
-      propagate_at_launch = true
-    }
-  ]
+  tags = {
+    Name        = "spot-asg-instance"
+    Environment = var.environment
+  }
 
   # --- Launch Template parameters ---
   create_launch_template = true
