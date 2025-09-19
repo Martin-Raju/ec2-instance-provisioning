@@ -67,8 +67,8 @@ module "asg" {
   launch_template_name   = "spot-lt"
   image_id               = var.ami_id
   key_name               = var.key_name
-  #instance_type          = var.default_instance_type
-  security_groups = [module.security_group.security_group_id]
+  instance_type          = var.default_instance_type
+  security_groups        = [module.security_group.security_group_id]
 
   user_data = base64encode(<<-EOT
     #!/bin/bash
