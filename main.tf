@@ -70,6 +70,9 @@ module "asg" {
   instance_type          = var.default_instance_type
   security_groups        = [module.security_group.security_group_id]
 
+  instance_market_options = {
+    market_type = "spot"
+  }
   user_data = base64encode(<<-EOT
     #!/bin/bash
     yum install -y stress
