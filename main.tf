@@ -69,6 +69,7 @@ module "asg" {
   image_id               = var.ami_id
   key_name               = var.key_name
   instance_type          = var.default_instance_type
+  vpc_security_group_ids = [module.security_group.security_group_id]
 
   user_data = base64encode(<<-EOT
     #!/bin/bash
@@ -83,10 +84,9 @@ module "asg" {
       overrides = [for itype in var.instance_types : { instance_type = itype }]
     }
     instances_distribution = {
-      base_capacity                            = 0
+      base_capacity                            = 1
       on_demand_percentage_above_base_capacity = 0
       spot_allocation_strategy                 = "capacity-optimized"
-      spot_instance_pools                      = 4
     }
   }
   scaling_policies = [
