@@ -83,7 +83,6 @@ module "asg" {
         launch_template_name = "spot-lt" # refers to the LT created above
         version              = "$Latest"
       }
-      overrides = [for itype in var.instance_types : { instance_type = itype }]
     }
     instances_distribution = {
       base_capacity                            = 0
