@@ -42,27 +42,7 @@ module "security_group" {
   ]
 }
 
-# --- Launch Template (Spot Instances) ---
-resource "aws_launch_template" "spot_lt" {
-  name_prefix            = "spot-lt"
-  image_id               = var.ami_id
-  instance_type          = var.default_instance_type
-  key_name               = var.key_name
-  vpc_security_group_ids = [module.security_group.security_group_id]
-
-  instance_market_options {
-    market_type = "spot"
-  }
-  user_data = base64encode(<<-EOT
-    #!/bin/bash
-    yum install -y stress
-    stress --cpu 3 --timeout 600 &
-  EOT
-  )
-}
-
-
-# --- Auto Scaling Group using the module ---
+# --- Auto Scaling Group with Launch Template and Mixed Instances ---
 module "asg" {
   source  = "terraform-aws-modules/autoscaling/aws"
   version = "~> 8.0"
@@ -73,22 +53,40 @@ module "asg" {
   max_size            = var.asg_max_size
   desired_capacity    = var.asg_desired_capacity
 
-  # --- Use existing launch template ---
-  launch_template_id      = aws_launch_template.spot_lt.id
-  launch_template_version = "$Latest"
-
   health_check_type         = "EC2"
   health_check_grace_period = 300
 
-  tags = {
-    Name        = "spot-asg-instance"
-    Environment = var.environment
+  # --- Launch Template parameters ---
+  create_launch_template     = true
+  force_delete               = true
+  launch_template_name       = "spot-lt"
+  image_id                   = var.ami_id
+  instance_type              = var.default_instance_type
+  key_name                   = var.key_name
+  security_groups            = [module.security_group.security_group_id]
+  use_mixed_instances_policy = true
+  user_data = base64encode(<<-EOT
+    #!/bin/bash
+    yum install -y stress
+    stress --cpu 3 --timeout 600 &
+  EOT
+  )
+  mixed_instances_policy = {
+    instances_distribution = {
+      base_capacity                            = 1
+      on_demand_percentage_above_base_capacity = var.on_demand_percentage_above_base_capacity
+      spot_allocation_strategy                 = "capacity-optimized"
+    }
+
+    launch_template = {
+      launch_template_specification = {
+        launch_template_id = module.asg.launch_template_id
+        version            = "$Latest"
+      }
+    }
   }
-  create_launch_template = false
-  force_delete           = true
 
   scaling_policies = [
-    # --- CPU Policy ---
     {
       name                      = "cpu-target-tracking"
       policy_type               = "TargetTrackingScaling"
@@ -101,4 +99,8 @@ module "asg" {
       }
     }
   ]
+  tags = {
+    Name        = "spot-asg-instance"
+    Environment = var.environment
+  }
 }
