@@ -88,6 +88,11 @@ module "asg" {
         launch_template_name = aws_launch_template.spot_lt.name
         version              = "$Latest"
       }
+      overrides = [
+        {
+          instance_type = var.default_instance_type
+        },
+      ]
     }
     instances_distribution = {
       base_capacity                            = 0
