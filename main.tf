@@ -56,31 +56,29 @@ module "asg" {
   health_check_type         = "EC2"
   health_check_grace_period = 300
 
-  tags = {
-    Name        = "spot-asg-instance"
-    Environment = var.environment
-  }
-
   # --- Launch Template parameters ---
   create_launch_template = true
   force_delete           = true
   launch_template_name   = "spot-lt"
   image_id               = var.ami_id
+  instance_type          = var.default_instance_type # required for LT
   key_name               = var.key_name
-  instance_type          = var.default_instance_type
-  security_groups        = [module.security_group.security_group_id]
+  vpc_security_group_ids = [module.security_group.security_group_id]
 
-  instance_market_options = {
-    market_type = "spot"
-  }
   user_data = base64encode(<<-EOT
     #!/bin/bash
     yum install -y stress
     stress --cpu 3 --timeout 600 &
   EOT
   )
-  # Mixed Instances Policy
+
   mixed_instances_policy = {
+    instances_distribution = {
+      base_capacity                            = 1
+      on_demand_percentage_above_base_capacity = 0
+      spot_allocation_strategy                 = "capacity-optimized"
+    }
+
     launch_template = {
       launch_template_specification = {
         launch_template_name = "spot-lt"
@@ -92,12 +90,8 @@ module "asg" {
         { instance_type = "t2.micro" }
       ]
     }
-    instances_distribution = {
-      base_capacity                            = 1
-      on_demand_percentage_above_base_capacity = 0
-      spot_allocation_strategy                 = "capacity-optimized"
-    }
   }
+
   scaling_policies = [
     {
       name                      = "cpu-target-tracking"
@@ -109,6 +103,19 @@ module "asg" {
         }
         target_value = var.cpu_target_value
       }
+    }
+  ]
+
+  tags = [
+    {
+      key                 = "Name"
+      value               = "spot-asg-instance"
+      propagate_at_launch = true
+    },
+    {
+      key                 = "Environment"
+      value               = var.environment
+      propagate_at_launch = true
     }
   ]
 }
