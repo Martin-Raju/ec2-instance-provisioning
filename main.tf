@@ -42,6 +42,26 @@ module "security_group" {
   ]
 }
 
+# --- Launch Template (Spot Instances) ---
+resource "aws_launch_template" "spot_lt" {
+  name_prefix            = "spot-lt"
+  image_id               = var.ami_id
+  instance_type          = var.default_instance_type
+  key_name               = var.key_name
+  vpc_security_group_ids = [module.security_group.security_group_id]
+
+  instance_market_options {
+    market_type = "spot"
+  }
+  user_data = base64encode(<<-EOT
+    #!/bin/bash
+    yum install -y stress
+    stress --cpu 3 --timeout 600 &
+  EOT
+  )
+}
+
+
 # --- Auto Scaling Group with Launch Template and Mixed Instances ---
 module "asg" {
   source  = "terraform-aws-modules/autoscaling/aws"
@@ -61,26 +81,11 @@ module "asg" {
     Environment = var.environment
   }
 
-  # --- Launch Template parameters ---
-  create_launch_template = true
-  force_delete           = true
-  launch_template_name   = "spot-lt"
-  image_id               = var.ami_id
-  key_name               = var.key_name
-  instance_type          = var.default_instance_type
-  security_groups        = [module.security_group.security_group_id]
-
-  user_data = base64encode(<<-EOT
-    #!/bin/bash
-    yum install -y stress
-    stress --cpu 3 --timeout 600 &
-  EOT
-  )
   # Mixed Instances Policy
   mixed_instances_policy = {
     launch_template = {
       launch_template_specification = {
-        launch_template_name = "spot-lt"
+        launch_template_name = aws_launch_template.spot_lt.name
         version              = "$Latest"
       }
     }
