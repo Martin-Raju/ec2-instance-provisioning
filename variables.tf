@@ -38,10 +38,10 @@ variable "asg_desired_capacity" {
 #  type        = list(string)
 #}
 
-variable "default_instance_type" {
-  description = "Default instance type for Launch Template "
-  type        = string
-}
+#variable "default_instance_type" {
+#  description = "Default instance type for Launch Template "
+#  type        = string
+#}
 
 variable "on_demand_percentage_above_base_capacity" {
   description = "Percentage of on-demand capacity above base in Mixed Instances Policy"
