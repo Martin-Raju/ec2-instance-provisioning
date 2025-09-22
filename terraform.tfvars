@@ -7,5 +7,5 @@ asg_min_size                             = 1
 asg_max_size                             = 5
 asg_desired_capacity                     = 2
 default_instance_type                    = "t3.small"
-on_demand_percentage_above_base_capacity = 20
+on_demand_percentage_above_base_capacity = 50
 cpu_target_value                         = 50
