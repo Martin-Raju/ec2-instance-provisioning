@@ -61,7 +61,7 @@ module "asg" {
   force_delete           = true
   launch_template_name   = "spot-lt"
   image_id               = var.ami_id
-  #instance_type              = var.default_instance_type
+  instance_type              = var.default_instance_type
   key_name                   = var.key_name
   security_groups            = [module.security_group.security_group_id]
   use_mixed_instances_policy = true
@@ -80,7 +80,7 @@ module "asg" {
 
     launch_template = {
       launch_template_specification = {
-        #  launch_template_id = module.asg.launch_template_id
+        launch_template_id = module.asg.launch_template_id
         version = "$Latest"
       }
       overrides = [
