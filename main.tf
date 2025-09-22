@@ -57,11 +57,11 @@ module "asg" {
   health_check_grace_period = 300
 
   # --- Launch Template parameters ---
-  create_launch_template     = true
-  force_delete               = true
-  launch_template_name       = "spot-lt"
-  image_id                   = var.ami_id
-  instance_type              = var.default_instance_type
+  create_launch_template = true
+  force_delete           = true
+  launch_template_name   = "spot-lt"
+  image_id               = var.ami_id
+  #instance_type              = var.default_instance_type
   key_name                   = var.key_name
   security_groups            = [module.security_group.security_group_id]
   use_mixed_instances_policy = true
@@ -73,7 +73,7 @@ module "asg" {
   )
   mixed_instances_policy = {
     instances_distribution = {
-      base_capacity                            = 1
+      base_capacity                            = 0
       on_demand_percentage_above_base_capacity = var.on_demand_percentage_above_base_capacity
       spot_allocation_strategy                 = "lowest-price"
     }
@@ -84,7 +84,7 @@ module "asg" {
         version            = "$Latest"
       }
       overrides = [
-        { instance_type = "t3.micro" },
+        { instance_type = "t4g.micro" },
         { instance_type = "t3.small" },
         { instance_type = "t3a.micro" }
       ]
