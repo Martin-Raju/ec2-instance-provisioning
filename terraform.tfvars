@@ -6,6 +6,6 @@ environment                              = "dev"
 asg_min_size                             = 2
 asg_max_size                             = 5
 asg_desired_capacity                     = 3
-default_instance_type                    = "t3.micro"
+default_instance_type                    = "m5a.large"
 on_demand_percentage_above_base_capacity = 0
 cpu_target_value                         = 50
