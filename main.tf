@@ -77,6 +77,7 @@ module "asg" {
       base_capacity                            = 1
       on_demand_percentage_above_base_capacity = var.on_demand_percentage_above_base_capacity
       spot_allocation_strategy                 = "lowest-price"
+      on_demand_allocation_strategy            = "prioritized"
       spot_instance_pools                      = 3
     }
 
