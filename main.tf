@@ -47,48 +47,44 @@ module "asg" {
   source  = "terraform-aws-modules/autoscaling/aws"
   version = "~> 8.0"
 
-  name                = "Test-server-${formatdate("YYYYMMDD-HHmmss", timeadd(timestamp(), "5h30m"))}"
-  vpc_zone_identifier = data.aws_subnets.default.ids
-  min_size            = var.asg_min_size
-  max_size            = var.asg_max_size
-  desired_capacity    = var.asg_desired_capacity
-
-  health_check_type         = "EC2"
-  health_check_grace_period = 300
-
-  # --- Launch Template parameters ---
+  name                       = "Test-server-${formatdate("YYYYMMDD-HHmmss", timeadd(timestamp(), "5h30m"))}"
+  vpc_zone_identifier        = data.aws_subnets.default.ids
+  min_size                   = var.asg_min_size
+  max_size                   = var.asg_max_size
+  desired_capacity           = var.asg_desired_capacity
+  health_check_type          = "EC2"
+  health_check_grace_period  = 300
   create_launch_template     = true
   force_delete               = true
   launch_template_name       = "spot-lt"
   image_id                   = var.ami_id
-  instance_type              = var.default_instance_type
   key_name                   = var.key_name
   security_groups            = [module.security_group.security_group_id]
   use_mixed_instances_policy = true
+
   user_data = base64encode(<<-EOT
     #!/bin/bash
     yum install -y stress
     stress --cpu 3 --timeout 600 &
   EOT
   )
+
   mixed_instances_policy = {
     instances_distribution = {
-      base_capacity                            = 0
+      base_capacity                            = 1
       on_demand_percentage_above_base_capacity = var.on_demand_percentage_above_base_capacity
       spot_allocation_strategy                 = "lowest-price"
+      on_demand_allocation_strategy            = "prioritized"
+      spot_instance_pools                      = 3
+      spot_max_price                           = var.spot_max_price
     }
 
-    launch_template = {
-      launch_template_specification = {
-        launch_template_id = module.asg.launch_template_id
-        version            = "$Latest"
-      }
-      overrides = [
-        { instance_type = "t4g.micro" },
-        { instance_type = "t3.small" },
-        { instance_type = "t3a.micro" }
-      ]
-    }
+    override = [
+      { instance_type = var.instance_type_p1 },
+      { instance_type = var.instance_type_p2 },
+      { instance_type = var.instance_type_p3 },
+      { instance_type = var.instance_type_p4 }
+    ]
   }
 
   scaling_policies = [
@@ -105,7 +101,7 @@ module "asg" {
     }
   ]
   tags = {
-    Name        = "spot-asg-instance"
+    Name        = "Asg-instance"
     Environment = var.environment
   }
 }

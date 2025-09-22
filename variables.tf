@@ -33,14 +33,29 @@ variable "asg_desired_capacity" {
   type        = number
 }
 
-#variable "instance_types" {
-#  description = "List of instance types for the Mixed Instances ASG"
-#  type        = list(string)
-#}
-
-variable "default_instance_type" {
-  description = "Default instance type for Launch Template "
+variable "instance_type_p1" {
+  description = "List of instance types for the Mixed Instances ASG"
   type        = string
+}
+
+variable "instance_type_p2" {
+  description = "List of instance types for the Mixed Instances ASG"
+  type        = string
+}
+
+variable "instance_type_p3" {
+  description = "List of instance types for the Mixed Instances ASG"
+  type        = string
+}
+
+variable "instance_type_p4" {
+  description = "List of instance types for the Mixed Instances ASG"
+  type        = string
+}
+
+variable "spot_max_price" {
+  description = "Default instance type for Launch Template "
+  type        = number
 }
 
 variable "on_demand_percentage_above_base_capacity" {
