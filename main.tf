@@ -79,17 +79,18 @@ module "asg" {
       spot_instance_pools                      = 3
     }
 
-    launch_template = {
-      launch_template_specification = {
-        #launch_template_id = module.asg.launch_template_id
-        version = "$Latest"
+    launch_template = [
+      {
+        launch_template_specification = {
+          version = "$Latest"
+        }
+        overrides = [
+          { instance_type = "t4g.micro" },
+          { instance_type = "t3.small" },
+          { instance_type = "t3a.micro" }
+        ]
       }
-      overrides = [
-        { instance_type = "t4g.micro" },
-        { instance_type = "t3.small" },
-        { instance_type = "t3a.micro" }
-      ]
-    }
+    ]
   }
 
   scaling_policies = [
