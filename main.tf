@@ -100,7 +100,7 @@ module "asg" {
     }
   ]
 
-  target_tracking_configuration = [
+  asg_target_tracking_configuration = [
     {
       predefined_metric_specification = {
         predefined_metric_type = "ASGAverageCPUUtilization"
