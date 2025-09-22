@@ -70,6 +70,9 @@ module "asg" {
     stress --cpu 3 --timeout 600 &
   EOT
   )
+  launch_template_config = {
+    spot_price = "0.04"
+  }
 
   mixed_instances_policy = {
     instances_distribution = {
