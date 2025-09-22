@@ -100,13 +100,17 @@ module "asg" {
     }
   ]
 
-  asg_target_tracking_configuration = [
+  scaling_policies = [
     {
-      predefined_metric_specification = {
-        predefined_metric_type = "ASGAverageCPUUtilization"
-      }
-      target_value              = var.cpu_target_value
+      name                      = "cpu-target-tracking"
+      policy_type               = "TargetTrackingScaling"
       estimated_instance_warmup = 120
+      target_tracking_configuration = {
+        predefined_metric_specification = {
+          predefined_metric_type = "ASGAverageCPUUtilization"
+        }
+        target_value = var.cpu_target_value
+      }
     }
   ]
 }
