@@ -79,35 +79,37 @@ module "asg" {
       spot_instance_pools                      = 3
     }
 
-    launch_template = [
+    override = [
       {
-        launch_template_specification = {
-          version = "$Latest"
-        }
-        overrides = [
-          { instance_type = "t4g.micro" },
-          { instance_type = "t3.small" },
-          { instance_type = "t3a.micro" }
-        ]
+        instance_type     = "t3.medium"
+        weighted_capacity = "1"
+      },
+      {
+        instance_type     = "t3a.medium"
+        weighted_capacity = "2"
+      },
+      {
+        instance_type     = "t3.small"
+        weighted_capacity = "3"
       }
     ]
   }
+}
 
-  scaling_policies = [
-    {
-      name                      = "cpu-target-tracking"
-      policy_type               = "TargetTrackingScaling"
-      estimated_instance_warmup = 120
-      target_tracking_configuration = {
-        predefined_metric_specification = {
-          predefined_metric_type = "ASGAverageCPUUtilization"
-        }
-        target_value = var.cpu_target_value
+scaling_policies = [
+  {
+    name                      = "cpu-target-tracking"
+    policy_type               = "TargetTrackingScaling"
+    estimated_instance_warmup = 120
+    target_tracking_configuration = {
+      predefined_metric_specification = {
+        predefined_metric_type = "ASGAverageCPUUtilization"
       }
+      target_value = var.cpu_target_value
     }
-  ]
-  tags = {
-    Name        = "spot-asg-instance"
-    Environment = var.environment
   }
+]
+tags = {
+  Name        = "spot-asg-instance"
+  Environment = var.environment
 }
