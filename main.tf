@@ -47,20 +47,19 @@ module "asg" {
   source  = "terraform-aws-modules/autoscaling/aws"
   version = "~> 8.0"
 
-  name                = "Test-server-${formatdate("YYYYMMDD-HHmmss", timeadd(timestamp(), "5h30m"))}"
-  vpc_zone_identifier = data.aws_subnets.default.ids
-  min_size            = var.asg_min_size
-  max_size            = var.asg_max_size
-  desired_capacity    = var.asg_desired_capacity
-
+  name                      = "Test-server-${formatdate("YYYYMMDD-HHmmss", timeadd(timestamp(), "5h30m"))}"
+  vpc_zone_identifier       = data.aws_subnets.default.ids
+  min_size                  = var.asg_min_size
+  max_size                  = var.asg_max_size
+  desired_capacity          = var.asg_desired_capacity
+  spot_price                = "0.04"
   health_check_type         = "EC2"
   health_check_grace_period = 300
 
-  create_launch_template = true
-  force_delete           = true
-  launch_template_name   = "spot-lt"
-  image_id               = var.ami_id
-  #instance_type              = var.default_instance_type
+  create_launch_template     = true
+  force_delete               = true
+  launch_template_name       = "spot-lt"
+  image_id                   = var.ami_id
   key_name                   = var.key_name
   security_groups            = [module.security_group.security_group_id]
   use_mixed_instances_policy = true
