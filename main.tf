@@ -87,19 +87,6 @@ module "asg" {
     ]
   }
 
-  tags = [
-    {
-      key                 = "Name"
-      value               = "spot-asg-instance"
-      propagate_at_launch = true
-    },
-    {
-      key                 = "Environment"
-      value               = var.environment
-      propagate_at_launch = true
-    }
-  ]
-
   scaling_policies = [
     {
       name                      = "cpu-target-tracking"
@@ -113,4 +100,8 @@ module "asg" {
       }
     }
   ]
+  tags = {
+    Name        = "spot-asg-instance"
+    Environment = var.environment
+  }
 }
