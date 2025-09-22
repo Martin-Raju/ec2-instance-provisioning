@@ -70,9 +70,6 @@ module "asg" {
     stress --cpu 3 --timeout 600 &
   EOT
   )
-  launch_template_config = {
-    spot_price = "0.04"
-  }
 
   mixed_instances_policy = {
     instances_distribution = {
@@ -81,6 +78,7 @@ module "asg" {
       spot_allocation_strategy                 = "lowest-price"
       on_demand_allocation_strategy            = "prioritized"
       spot_instance_pools                      = 3
+      spot_max_price                           = "0.05"
     }
 
     override = [
