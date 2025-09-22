@@ -81,9 +81,9 @@ module "asg" {
     }
 
     override = [
-      { instance_type = "t3a.medium", weighted_capacity = "1" },
-      { instance_type = "t3.medium", weighted_capacity = "2" },
-      { instance_type = "t3.small", weighted_capacity = "3" }
+      { instance_type = "t3a.medium" },
+      { instance_type = "t3.medium" },
+      { instance_type = "t3.small" }
     ]
   }
 
