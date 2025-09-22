@@ -47,7 +47,7 @@ module "asg" {
   source  = "terraform-aws-modules/autoscaling/aws"
   version = "~> 8.0"
 
-  name                = "spot-asg"
+  name                = "Test-server-${formatdate("YYYYMMDD-HHmmss", timeadd(timestamp(), "5h30m"))}"
   vpc_zone_identifier = data.aws_subnets.default.ids
   min_size            = var.asg_min_size
   max_size            = var.asg_max_size
@@ -73,9 +73,9 @@ module "asg" {
   )
   mixed_instances_policy = {
     instances_distribution = {
-      base_capacity                            = 1
+      base_capacity                            = 0
       on_demand_percentage_above_base_capacity = var.on_demand_percentage_above_base_capacity
-      spot_allocation_strategy                 = "capacity-optimized"
+      spot_allocation_strategy                 = "lowest-price"
     }
 
     launch_template = {
@@ -83,6 +83,11 @@ module "asg" {
         launch_template_id = module.asg.launch_template_id
         version            = "$Latest"
       }
+      overrides = [
+        { instance_type = "t4g.micro" },
+        { instance_type = "t3.small" },
+        { instance_type = "t3a.micro" }
+      ]
     }
   }
 
