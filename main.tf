@@ -56,7 +56,6 @@ module "asg" {
   health_check_type         = "EC2"
   health_check_grace_period = 300
 
-  # --- Launch Template parameters ---
   create_launch_template     = true
   force_delete               = true
   launch_template_name       = "spot-lt"
@@ -65,12 +64,14 @@ module "asg" {
   key_name                   = var.key_name
   security_groups            = [module.security_group.security_group_id]
   use_mixed_instances_policy = true
+
   user_data = base64encode(<<-EOT
     #!/bin/bash
     yum install -y stress
     stress --cpu 3 --timeout 600 &
   EOT
   )
+
   mixed_instances_policy = {
     instances_distribution = {
       base_capacity                            = 0
@@ -85,30 +86,27 @@ module "asg" {
       { instance_type = "t3.small", weighted_capacity = "3" }
     ]
   }
-}
 
-scaling_policies = [
-  {
-    name                      = "cpu-target-tracking"
-    policy_type               = "TargetTrackingScaling"
-    estimated_instance_warmup = 120
-    target_tracking_configuration = {
+  tags = [
+    {
+      key                 = "Name"
+      value               = "spot-asg-instance"
+      propagate_at_launch = true
+    },
+    {
+      key                 = "Environment"
+      value               = var.environment
+      propagate_at_launch = true
+    }
+  ]
+
+  target_tracking_configuration = [
+    {
       predefined_metric_specification = {
         predefined_metric_type = "ASGAverageCPUUtilization"
       }
-      target_value = var.cpu_target_value
+      target_value              = var.cpu_target_value
+      estimated_instance_warmup = 120
     }
-  }
-]
-tags = [
-  {
-    key                 = "Name"
-    value               = "spot-asg-instance"
-    propagate_at_launch = true
-  },
-  {
-    key                 = "Environment"
-    value               = var.environment
-    propagate_at_launch = true
-  }
-]
+  ]
+}
