@@ -80,18 +80,9 @@ module "asg" {
     }
 
     override = [
-      {
-        instance_type     = "t3.medium"
-        weighted_capacity = "1"
-      },
-      {
-        instance_type     = "t3a.medium"
-        weighted_capacity = "2"
-      },
-      {
-        instance_type     = "t3.small"
-        weighted_capacity = "3"
-      }
+      { instance_type = "t3.medium", weighted_capacity = "1" },
+      { instance_type = "t3a.medium", weighted_capacity = "2" },
+      { instance_type = "t3.small", weighted_capacity = "3" }
     ]
   }
 }
@@ -109,7 +100,15 @@ scaling_policies = [
     }
   }
 ]
-tags = {
-  Name        = "spot-asg-instance"
-  Environment = var.environment
-}
+tags = [
+  {
+    key                 = "Name"
+    value               = "spot-asg-instance"
+    propagate_at_launch = true
+  },
+  {
+    key                 = "Environment"
+    value               = var.environment
+    propagate_at_launch = true
+  }
+]
