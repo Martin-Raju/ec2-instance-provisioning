@@ -75,7 +75,7 @@ module "asg" {
     instances_distribution = {
       base_capacity                            = 1
       on_demand_percentage_above_base_capacity = var.on_demand_percentage_above_base_capacity
-      spot_allocation_strategy                 = "capacity-optimized"
+      spot_allocation_strategy                 = "lowest-price"
     }
 
     launch_template = {
@@ -83,6 +83,11 @@ module "asg" {
         launch_template_id = module.asg.launch_template_id
         version            = "$Latest"
       }
+      overrides = [
+        { instance_type = "t3.micro" },
+        { instance_type = "t3.small" },
+        { instance_type = "t3a.micro" }
+      ]
     }
   }
 
