@@ -47,7 +47,7 @@ module "asg" {
   source  = "terraform-aws-modules/autoscaling/aws"
   version = "~> 8.0"
 
-  name                = "Test-server-${formatdate("YYYYMMDD-HHmmss", timestamp())}"
+  name                = "Test-server-${formatdate("YYYYMMDD-HHmmss", timeadd(timestamp(), "5h30m"))}"
   vpc_zone_identifier = data.aws_subnets.default.ids
   min_size            = var.asg_min_size
   max_size            = var.asg_max_size
