@@ -47,14 +47,13 @@ module "asg" {
   source  = "terraform-aws-modules/autoscaling/aws"
   version = "~> 8.0"
 
-  name                      = "Test-server-${formatdate("YYYYMMDD-HHmmss", timeadd(timestamp(), "5h30m"))}"
-  vpc_zone_identifier       = data.aws_subnets.default.ids
-  min_size                  = var.asg_min_size
-  max_size                  = var.asg_max_size
-  desired_capacity          = var.asg_desired_capacity
-  health_check_type         = "EC2"
-  health_check_grace_period = 300
-
+  name                       = "Test-server-${formatdate("YYYYMMDD-HHmmss", timeadd(timestamp(), "5h30m"))}"
+  vpc_zone_identifier        = data.aws_subnets.default.ids
+  min_size                   = var.asg_min_size
+  max_size                   = var.asg_max_size
+  desired_capacity           = var.asg_desired_capacity
+  health_check_type          = "EC2"
+  health_check_grace_period  = 300
   create_launch_template     = true
   force_delete               = true
   launch_template_name       = "spot-lt"
@@ -77,13 +76,14 @@ module "asg" {
       spot_allocation_strategy                 = "lowest-price"
       on_demand_allocation_strategy            = "prioritized"
       spot_instance_pools                      = 3
-      spot_max_price                           = "0.05"
+      spot_max_price                           = var.spot_max_price
     }
 
     override = [
-      { instance_type = "t3a.medium" },
-      { instance_type = "t3.medium" },
-      { instance_type = "t3.small" }
+      { instance_type = var.instance_type_p1 },
+      { instance_type = var.instance_type_p2 },
+      { instance_type = var.instance_type_p3 },
+      { instance_type = var.instance_type_p4 }
     ]
   }
 
