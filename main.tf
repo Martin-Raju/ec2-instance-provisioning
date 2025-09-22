@@ -42,12 +42,17 @@ module "security_group" {
   ]
 }
 
+# --- Local for dynamic timestamp ---
+locals {
+  asg_created_time = formatdate("YYYYMMDD-HHmmss", timestamp())
+}
+
 # --- Auto Scaling Group with Launch Template and Mixed Instances ---
 module "asg" {
   source  = "terraform-aws-modules/autoscaling/aws"
   version = "~> 8.0"
 
-  name                       = "Test-server-${formatdate("YYYYMMDD-HHmmss", timeadd(timestamp(), "5h30m"))}"
+  name                       = "Test-server-${local.asg_created_time}"
   vpc_zone_identifier        = data.aws_subnets.default.ids
   min_size                   = var.asg_min_size
   max_size                   = var.asg_max_size
@@ -101,7 +106,7 @@ module "asg" {
     }
   ]
   tags = {
-    Name        = "spot-asg-instance"
+    Name        = "Asg-instance-${local.asg_created_time}"
     Environment = var.environment
   }
 }
