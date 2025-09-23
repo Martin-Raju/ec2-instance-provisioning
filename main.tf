@@ -16,7 +16,8 @@ data "aws_subnets" "default" {
 
 # Security Group
 module "security_group" {
-  source      = "./modules/terraform-aws-security-group"
+  source      = "terraform-aws-modules/security-group/aws"
+  version     = "~> 5.0"
   name        = "allow_ssh"
   description = "Allow SSH inbound traffic"
   vpc_id      = data.aws_vpc.default.id
