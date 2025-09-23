@@ -16,7 +16,8 @@ data "aws_subnets" "default" {
 
 # Security Group
 module "security_group" {
-  source      = "./modules/security-group"
+  source      = "terraform-aws-modules/security-group/aws"
+  version     = "5.3.0"
   name        = "allow_ssh"
   description = "Allow SSH inbound traffic"
   vpc_id      = data.aws_vpc.default.id
@@ -43,7 +44,8 @@ module "security_group" {
 
 # --- Auto Scaling Group with Launch Template and Mixed Instances ---
 module "asg" {
-  source                     = "./modules/autoscaling"
+  source                     = "terraform-aws-modules/autoscaling/aws"
+  version                    = "8.3.1"
   name                       = "Test-server"
   vpc_zone_identifier        = data.aws_subnets.default.ids
   min_size                   = var.asg_min_size
