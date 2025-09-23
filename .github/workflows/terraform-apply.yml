@@ -47,6 +47,6 @@ jobs:
         run: terraform plan -out=tfplan
 
       # Terraform Apply  
-      #- name: Terraform Apply
-      # if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
-      # run: terraform apply -auto-approve tfplan
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+        run: terraform apply -auto-approve tfplan
