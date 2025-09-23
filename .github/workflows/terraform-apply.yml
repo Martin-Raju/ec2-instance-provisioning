@@ -31,10 +31,12 @@ jobs:
         id: set_ami
         run: |
           echo "Building AMI..."
-          # Build the AMI and save full output to a log
-          PACKER_OUTPUT=$(packer build -machine-readable packer/webserver-ami.pkr.hcl | tee packer_output.log)
+          PACKER_OUTPUT=$(packer build -machine-readable \
+            -var "aws_region=${{ secrets.AWS_REGION }}" \
+            -var "ami_name=custom-webserver-ami-${{ github.run_number }}" \
+            packer/webserver-ami.pkr.hcl | tee packer_output.log)
 
-          # Extract AMI ID robustly
+          # Extract AMI ID 
           AMI_ID=$(echo "$PACKER_OUTPUT" | grep 'artifact,0,id,aws' | awk -F, '{print $6}' | sed 's/.*://')
 
           if [ -z "$AMI_ID" ]; then
