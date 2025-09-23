@@ -46,11 +46,6 @@ jobs:
       - name: Terraform Plan
         run: terraform plan -out=tfplan
 
-      - name: Copy downloaded Terraform modules for offline use
-        run: |
-              mkdir -p modules
-              cp -r .terraform/modules/asg ./modules/terraform-aws-autoscaling
-              cp -r .terraform/modules/security_group ./modules/terraform-aws-security-group
       # Terraform Apply  
       #- name: Terraform Apply
       # if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
