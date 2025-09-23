@@ -16,7 +16,7 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v3
 
       - name: Install Packer
@@ -24,37 +24,12 @@ jobs:
         with:
           version: "1.9.1"
 
-      - name: Initialize Packer
-        run: packer init packer/webserver-ami.pkr.hcl
-
       - name: Build AMI with Packer
         id: set_ami
         run: |
-          echo "Building AMI..."
-          PACKER_OUTPUT=$(packer build -machine-readable \
-            -var "aws_region=${{ secrets.AWS_REGION }}" \
-            -var "ami_name=custom-webserver-ami-${{ github.run_number }}" \
-            packer/webserver-ami.pkr.hcl | tee packer_output.log)
-
-          # Extract AMI ID 
-          AMI_ID=$(echo "$PACKER_OUTPUT" | grep 'artifact,0,id,aws' | awk -F, '{print $6}' | sed 's/.*://')
-
-          if [ -z "$AMI_ID" ]; then
-            echo "ERROR: AMI ID not found!"
-            cat packer_output.log
-            exit 1
-          fi
-
-          echo "Built AMI ID: $AMI_ID"
-
-          # Set as GitHub Actions output
+          packer init packer/webserver-ami.pkr.hcl
+          AMI_ID=$(packer build -machine-readable packer/webserver-ami.pkr.hcl | awk -F, '/artifact,0,id/ {print $6}' | sed 's/.*://')
           echo "ami_id=$AMI_ID" >> $GITHUB_OUTPUT
-
-      - name: Debug AMI ID
-        env:
-          AMI_ID: ${{ steps.set_ami.outputs.ami_id }}
-        run: |
-          echo "AMI ID from build step: $AMI_ID"
 
   deploy-terraform:
     name: Deploy ASG with Terraform
@@ -66,14 +41,8 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AMI_ID: ${{ needs.build-ami.outputs.ami_id }}
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v3
-
-      - name: Debug AMI ID before Terraform
-        env:
-          AMI_ID: ${{ needs.build-ami.outputs.ami_id }}
-        run: |
-          echo "AMI ID passed to deploy job: $AMI_ID"
 
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v2
