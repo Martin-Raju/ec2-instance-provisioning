@@ -70,7 +70,8 @@ jobs:
       - name: Debug AMI ID before Terraform
         env:
           AMI_ID: ${{ needs.build-ami.outputs.ami_id }}
-        run: echo "AMI ID passed to deploy job: $AMI_ID"
+        run: |
+          echo "AMI ID passed to deploy job: $AMI_ID"
 
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v2
