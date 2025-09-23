@@ -43,7 +43,8 @@ module "security_group" {
 
 # --- Auto Scaling Group with Launch Template and Mixed Instances ---
 module "asg" {
-  source                     = "./modules/terraform-aws-autoscaling"
+  source  = "terraform-aws-modules/autoscaling/aws"
+  version = "~> 8.0"
   name                       = "Test-server"
   vpc_zone_identifier        = data.aws_subnets.default.ids
   min_size                   = var.asg_min_size
