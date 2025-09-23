@@ -1,10 +1,3 @@
-name: Packer + Terraform CI/CD
-
-on:
-  push:
-    branches:
-      - develop_23-09-25
-
 jobs:
   build-ami:
     name: Build Web Server AMI
@@ -27,36 +20,30 @@ jobs:
       - name: Build AMI with Packer
         id: set_ami
         run: |
+          echo "Initializing Packer..."
           packer init packer/webserver-ami.pkr.hcl
-          AMI_ID=$(packer build -machine-readable packer/webserver-ami.pkr.hcl | awk -F, '/artifact,0,id/ {print $6}' | sed 's/.*://')
+
+          echo "Building AMI..."
+          PACKER_OUTPUT=$(packer build -machine-readable packer/webserver-ami.pkr.hcl | tee packer_output.log)
+
+          # Extract AMI ID(s)
+          AMI_ID=$(echo "$PACKER_OUTPUT" | grep 'artifact,0,id,aws' | awk -F, '{print $6}' | sed 's/.*://')
+
+          if [ -z "$AMI_ID" ]; then
+            echo "ERROR: AMI ID not found!"
+            cat packer_output.log
+            exit 1
+          fi
+
+          echo "Built AMI ID: $AMI_ID"
+
+          # Set GitHub Actions output
           echo "ami_id=$AMI_ID" >> $GITHUB_OUTPUT
 
-  deploy-terraform:
-    name: Deploy ASG with Terraform
-    runs-on: ubuntu-latest
-    needs: build-ami
-    env:
-      AWS_REGION: ${{ secrets.AWS_REGION }}
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      AMI_ID: ${{ needs.build-ami.outputs.ami_id }}
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
-
-      - name: Install Terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: "1.9.0"
-
-      - name: Terraform Init
-        run: terraform init
-        working-directory: terraform
-
-      - name: Terraform Plan
-        run: terraform plan -var "custom_ami_id=${{ env.AMI_ID }}"
-        working-directory: terraform
-
-      - name: Terraform Apply
-        run: terraform apply -auto-approve -var "custom_ami_id=${{ env.AMI_ID }}"
-        working-directory: terraform
+      - name: Debug AMI ID
+        env:
+          AMI_ID: ${{ steps.set_ami.outputs.ami_id }}
+        run: |
+          echo "============================="
+          echo "DEBUG: AMI ID captured from Packer build: $AMI_ID"
+          echo "============================="
