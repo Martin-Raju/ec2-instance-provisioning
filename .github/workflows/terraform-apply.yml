@@ -1,3 +1,10 @@
+name: Build Web Server AMI 
+on:
+  push:
+    branches:
+      - develop
+  pull_request:
+
 jobs:
   build-ami:
     name: Build Web Server AMI
