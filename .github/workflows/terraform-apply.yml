@@ -49,7 +49,9 @@ jobs:
           echo "ami_id=$AMI_ID" >> $GITHUB_OUTPUT
 
       - name: Debug AMI ID
-        run: echo "AMI ID from build step: ${{ steps.set_ami.outputs.ami_id }}"
+        env:
+          AMI_ID: ${{ steps.set_ami.outputs.ami_id }}
+        run: echo "AMI ID from build step: $AMI_ID"
 
   deploy-terraform:
     name: Deploy ASG with Terraform
