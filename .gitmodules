@@ -1,3 +1,0 @@
-[submodule "modules/terraform-aws-autoscaling"]
-	path = modules/terraform-aws-autoscaling
-	url = https://github.com/terraform-aws-modules/terraform-aws-autoscaling.git
