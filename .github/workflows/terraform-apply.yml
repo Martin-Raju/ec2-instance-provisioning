@@ -6,34 +6,11 @@ on:
       - develop
 
 jobs:
-  # build-ami:
-  #   name: Build Web Server AMI
-  #   runs-on: ubuntu-latest
-  #   outputs:
-  #     ami_id: ${{ steps.set_ami.outputs.ami_id }}
-  #   env:
-  #     AWS_REGION: ${{ secrets.AWS_REGION }}
-  #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  #   steps:
-  #     - name: Checkout repo
-  #       uses: actions/checkout@v3
-
-  #     - name: Install Packer
-  #       uses: hashicorp/setup-packer@v2
-  #       with:
-  #         version: "1.9.1"
-
-  #     - name: Build AMI with Packer
-  #       id: set_ami
-  #       run: |
-  #         packer init packer/webserver-ami.pkr.hcl
-  #         AMI_ID=$(packer build -machine-readable packer/webserver-ami.pkr.hcl | awk -F, '/artifact,0,id/ {print $6}' | sed 's/.*://')
-  #         echo "ami_id=$AMI_ID" >> $GITHUB_OUTPUT
-
-  deploy-terraform:
-    name: Deploy ASG with Terraform
+  build-ami:
+    name: Build Web Server AMI
     runs-on: ubuntu-latest
+    outputs:
+      ami_id: ${{ steps.set_ami.outputs.ami_id }}
     env:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -42,19 +19,42 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Install Terraform
-        uses: hashicorp/setup-terraform@v2
+      - name: Install Packer
+        uses: hashicorp/setup-packer@v2
         with:
-          terraform_version: "1.9.0"
+          version: "1.9.1"
 
-      - name: Terraform Init
-        run: terraform init
-        working-directory: terraform
+      - name: Build AMI with Packer
+        id: set_ami
+        run: |
+          packer init packer/webserver-ami.pkr.hcl
+          AMI_ID=$(packer build -machine-readable packer/webserver-ami.pkr.hcl | awk -F, '/artifact,0,id/ {print $6}' | sed 's/.*://')
+          echo "ami_id=$AMI_ID" >> $GITHUB_OUTPUT
 
-      - name: Terraform Plan
-        run: terraform plan 
-        working-directory: terraform
+  # deploy-terraform:
+  #   name: Deploy ASG with Terraform
+  #   runs-on: ubuntu-latest
+  #   env:
+  #     AWS_REGION: ${{ secrets.AWS_REGION }}
+  #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #   steps:
+  #     - name: Checkout repo
+  #       uses: actions/checkout@v3
 
-      - name: Terraform Apply
-        run: terraform apply -auto-approve  
-        working-directory: terraform
+  #     - name: Install Terraform
+  #       uses: hashicorp/setup-terraform@v2
+  #       with:
+  #         terraform_version: "1.9.0"
+
+  #     - name: Terraform Init
+  #       run: terraform init
+  #       working-directory: terraform
+
+  #     - name: Terraform Plan
+  #       run: terraform plan 
+  #       working-directory: terraform
+
+  #     - name: Terraform Apply
+  #       run: terraform apply -auto-approve  
+  #       working-directory: terraform
