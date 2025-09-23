@@ -69,6 +69,6 @@ variable "cpu_target_value" {
 }
 
 variable "ami_name" {
-  type    = string
+  type = string
 }
 
