@@ -57,7 +57,7 @@ module "asg" {
   create_launch_template     = true
   force_delete               = true
   launch_template_name       = "spot-lt"
-  image_id                   = var.ami_id
+  image_id                   = aws_ami_from_instance.webserver_ami.id
   key_name                   = var.key_name
   security_groups            = [module.security_group.security_group_id]
   use_mixed_instances_policy = true
