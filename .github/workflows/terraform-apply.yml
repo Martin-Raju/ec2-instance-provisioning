@@ -1,56 +1,62 @@
-name: Build Web Server AMI 
+name: Packer + Terraform CI/CD
+
 on:
   push:
     branches:
       - develop
-  pull_request:
 
 jobs:
-  build-ami:
-    name: Build Web Server AMI
+  # build-ami:
+  #   name: Build Web Server AMI
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     ami_id: ${{ steps.set_ami.outputs.ami_id }}
+  #   env:
+  #     AWS_REGION: ${{ secrets.AWS_REGION }}
+  #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #   steps:
+  #     - name: Checkout repo
+  #       uses: actions/checkout@v3
+
+  #     - name: Install Packer
+  #       uses: hashicorp/setup-packer@v2
+  #       with:
+  #         version: "1.9.1"
+
+  #     - name: Build AMI with Packer
+  #       id: set_ami
+  #       run: |
+  #         packer init packer/webserver-ami.pkr.hcl
+  #         AMI_ID=$(packer build -machine-readable packer/webserver-ami.pkr.hcl | awk -F, '/artifact,0,id/ {print $6}' | sed 's/.*://')
+  #         echo "ami_id=$AMI_ID" >> $GITHUB_OUTPUT
+
+  deploy-terraform:
+    name: Deploy ASG with Terraform
     runs-on: ubuntu-latest
-    outputs:
-      ami_id: ${{ steps.set_ami.outputs.ami_id }}
+    needs: build-ami
     env:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AMI_ID: ${{ needs.build-ami.outputs.ami_id }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Install Packer
-        uses: hashicorp/setup-packer@v2
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v2
         with:
-          version: "1.9.1"
+          terraform_version: "1.9.0"
 
-      - name: Build AMI with Packer
-        id: set_ami
-        run: |
-          echo "Initializing Packer..."
-          packer init packer/webserver-ami.pkr.hcl
+      - name: Terraform Init
+        run: terraform init
+        working-directory: terraform
 
-          echo "Building AMI..."
-          PACKER_OUTPUT=$(packer build -machine-readable packer/webserver-ami.pkr.hcl | tee packer_output.log)
+      - name: Terraform Plan
+        run: terraform plan 
+        working-directory: terraform
 
-          # Extract AMI ID(s)
-          AMI_ID=$(echo "$PACKER_OUTPUT" | grep 'artifact,0,id,aws' | awk -F, '{print $6}' | sed 's/.*://')
-
-          if [ -z "$AMI_ID" ]; then
-            echo "ERROR: AMI ID not found!"
-            cat packer_output.log
-            exit 1
-          fi
-
-          echo "Built AMI ID: $AMI_ID"
-
-          # Set GitHub Actions output
-          echo "ami_id=$AMI_ID" >> $GITHUB_OUTPUT
-
-      - name: Debug AMI ID
-        env:
-          AMI_ID: ${{ steps.set_ami.outputs.ami_id }}
-        run: |
-          echo "============================="
-          echo "DEBUG: AMI ID captured from Packer build: $AMI_ID"
-          echo "============================="
+      - name: Terraform Apply
+        run: terraform apply -auto-approve  
+        working-directory: terraform
