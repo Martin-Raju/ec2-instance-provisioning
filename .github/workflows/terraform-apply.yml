@@ -31,9 +31,6 @@ jobs:
           AMI_ID=$(packer build -machine-readable packer/webserver-ami.pkr.hcl | awk -F, '/artifact,0,id/ {print $6}' | sed 's/.*://')
           echo "ami_id=$AMI_ID" >> $GITHUB_OUTPUT
 
-      - name: Output AMI ID
-        run: echo "Built AMI ID: ${{ steps.set_ami.outputs.ami_id }}"
-
   deploy-terraform:
     name: Deploy ASG with Terraform
     runs-on: ubuntu-latest
