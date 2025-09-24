@@ -28,7 +28,7 @@ jobs:
         id: set_ami
         run: |
           packer init packer/webserver-ami.pkr.hcl
-          AMI_ID=$(packer build -machine-readable -color=false packer/webserver-ami.pkr.hcl | awk -F, '/artifact,0,id/ {print $6}' | awk -F: '{print $2}')
+          AMI_ID=$(packer build -var "aws_region=$AWS_REGION" -machine-readable -color=false packer/webserver-ami.pkr.hcl | awk -F, '/artifact,0,id/ {print $6}' | awk -F: '{print $2}')
           echo "Built AMI: $AMI_ID"
 
   # deploy-terraform:
