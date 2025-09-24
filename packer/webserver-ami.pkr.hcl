@@ -29,9 +29,7 @@
           "sudo apt-get update",
           "sudo apt-get install -y nginx",
           "sudo systemctl enable nginx",
-          "sudo systemctl start nginx",
-          "sudo apt-get install -y stress",
-          "sudo stress --cpu 3 --timeout 600 &"
+          "sudo systemctl start nginx"
         ]
       }
     }
