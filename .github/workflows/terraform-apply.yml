@@ -29,7 +29,7 @@ jobs:
         run: |
           packer init packer/webserver-ami.pkr.hcl
           AMI_ID=$(packer build -machine-readable -color=false packer/webserver-ami.pkr.hcl | awk -F, '/artifact,0,id/ {print $6}' | awk -F: '{print $2}')
-          echo "$AMI_ID"
+          echo "Built AMI: $AMI_ID"
 
   # deploy-terraform:
   #   name: Deploy ASG with Terraform
