@@ -9,27 +9,23 @@ jobs:
   build-ami:
     name: Build Web Server AMI
     runs-on: ubuntu-latest
-    outputs:
-      ami_id: ${{ steps.set_ami.outputs.ami_id }}
-    env:
-      AWS_REGION: ${{ secrets.AWS_REGION }}
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+    - name: Setup Packer
+      uses: hashicorp/setup-packer@v1
+      with:
+         version: 'latest' 
 
-      - name: Install Packer
-        uses: hashicorp/setup-packer@v2
-        with:
-          version: "1.9.1"
+    - name: Packer Init
+      run: packer init . 
 
-      - name: Build AMI with Packer
-        id: set_ami
-        run: |
-          packer init packer/webserver-ami.pkr.hcl
-          AMI_ID=$(packer build -var "aws_region=$AWS_REGION" -machine-readable -color=false packer/webserver-ami.pkr.hcl | awk -F, '/artifact,0,id/ {print $6}' | awk -F: '{print $2}')
-          echo "Built AMI: $AMI_ID"
+    - name: Packer Build
+      run: packer build ami.pkr.hcl 
+      env:
+         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+           
 
   # deploy-terraform:
   #   name: Deploy ASG with Terraform
