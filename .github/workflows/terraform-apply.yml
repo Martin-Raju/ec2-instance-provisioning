@@ -23,10 +23,10 @@ jobs:
          version: '1.9.1' 
 
     - name: Packer Init
-      run: packer init . 
+      run: packer init  packer/webserver-ami.pkr.hcl
 
     - name: Packer Build
-      run: packer build ami.pkr.hcl 
+      run: packer build packer/webserver-ami.pkr.hcl 
 
            
 
