@@ -8,7 +8,7 @@
       }
     }
 
-    source "amazon-ebs" "test" {
+    source "amazon-ebs" "webserver" {
       ami_name      = "my-packer-ami-{{timestamp}}"
       instance_type = "t2.micro"
       region        = "us-east-1"
@@ -19,13 +19,13 @@
           virtualization-type = "hvm"
         }
         most_recent = true
-        owners      = ["test"]
+        owners      = ["amazon"]
       }
       ssh_username = "ubuntu"
     }
 
     build {
-      sources = ["source.amazon-ebs.test"]
+      sources = ["source.amazon-ebs.webserver"]
       provisioner "shell" {
         inline = [
           "sudo apt-get update",
