@@ -73,14 +73,26 @@ module "asg" {
       spot_allocation_strategy                 = "lowest-price"
       on_demand_allocation_strategy            = "prioritized"
       spot_instance_pools                      = 3
-      spot_max_price                           = var.spot_max_price
+      #spot_max_price                           = var.spot_max_price
     }
 
     override = [
-      { instance_type = var.instance_type_p1 },
-      { instance_type = var.instance_type_p2 },
-      { instance_type = var.instance_type_p3 },
-      { instance_type = var.instance_type_p4 }
+      {
+        instance_type = var.instance_type_p1
+        spot_price    = var.spot_price_p1
+      },
+      {
+        instance_type = var.instance_type_p2
+        spot_price    = var.spot_price_p2
+      },
+      {
+        instance_type = var.instance_type_p3
+        spot_price    = var.spot_price_p3
+      },
+      {
+        instance_type = var.instance_type_p4
+        spot_price    = var.spot_price_p4
+      }
     ]
   }
 

@@ -67,3 +67,23 @@ variable "cpu_target_value" {
   description = "CPU utilization percentage target for scaling policy"
   type        = number
 }
+
+variable "spot_price_p1" {
+  description = "Default instance type for Launch Template "
+  type        = number
+}
+
+variable "spot_price_p2" {
+  description = "Default instance type for Launch Template "
+  type        = number
+}
+
+variable "spot_price_p3" {
+  description = "Default instance type for Launch Template "
+  type        = number
+}
+
+variable "spot_price_p4" {
+  description = "Default instance type for Launch Template "
+  type        = number
+}
