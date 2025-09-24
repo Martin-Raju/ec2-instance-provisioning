@@ -10,7 +10,7 @@
 
     source "amazon-ebs" "webserver" {
       ami_name      = "my-packer-ami-{{timestamp}}"
-      instance_type = "t2.micro"
+      instance_type = "t3.small"
       region        = "us-east-1"
       source_ami_filter {
         filters = {
