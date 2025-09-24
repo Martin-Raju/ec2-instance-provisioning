@@ -29,7 +29,7 @@ jobs:
 
     - name: Packer Build
       run: |
-          packer build -var "aws_region=$AWS_REGION" -machine-readable -color=false packer/webserver-ami.pkr.hcl | tee build.log
+          packer build packer/webserver-ami.pkr.hcl | tee build.log
           grep artifact,0,id build.log
           AMI_ID=$(grep artifact,0,id build.log | awk -F, '{print $6}' | awk -F: '{print $2}')
           echo "Built AMI: $AMI_ID"
