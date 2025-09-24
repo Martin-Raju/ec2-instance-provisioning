@@ -5,7 +5,7 @@ on:
     branches:
       - develop
 
-# jobs:
+ jobs:
   # build-ami:
     # name: Build Web Server AMI
     # runs-on: ubuntu-latest
