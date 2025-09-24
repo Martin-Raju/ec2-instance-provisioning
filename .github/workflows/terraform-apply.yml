@@ -30,7 +30,7 @@ jobs:
     - name: Packer Build
       id: packer_build
       run: |
-       AMI_ID=$(packer build packer/webserver-ami.pkr.hcl \
+       AMI_ID=$(packer build -machine-readable packer/webserver-ami.pkr.hcl \
         | awk -F, '/artifact,0,id/ {print $6}' | awk -F: '{print $2}')
        echo "Built AMI: $AMI_ID"
        echo "ami_id=$AMI_ID" >> $GITHUB_OUTPUT
