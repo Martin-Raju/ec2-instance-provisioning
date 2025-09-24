@@ -59,7 +59,7 @@ jobs:
         working-directory: terraform
 
       - name: Terraform Plan
-        run: terraform plan "ami_id=$AMI_ID"
+        run: terraform plan -var "ami_id=$AMI_ID"
         working-directory: terraform
 
       - name: Terraform Apply
