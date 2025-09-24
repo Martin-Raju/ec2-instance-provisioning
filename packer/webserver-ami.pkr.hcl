@@ -1,12 +1,3 @@
-    # Example for an AWS AMI
-    packer {
-      required_plugins {
-        amazon = {
-          source  = "github.com/hashicorp/amazon"
-          version = "~> 1"
-        }
-      }
-    }
 
     source "amazon-ebs" "webserver" {
       ami_name      = "my-packer-ami-{{timestamp}}"

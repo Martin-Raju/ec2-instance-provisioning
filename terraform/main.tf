@@ -68,7 +68,8 @@ module "asg" {
 
   user_data = base64encode(<<-EOT
     #!/bin/bash
-    yum install -y stress
+	apt-get update -y
+    apt-get install -y stress
     stress --cpu 3 --timeout 600 &
   EOT
   )
