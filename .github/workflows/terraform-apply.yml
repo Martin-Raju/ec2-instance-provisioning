@@ -29,7 +29,7 @@ jobs:
 
     - name: Packer Build
       run: |
-          packer build packer/webserver-ami.pkr.hcl | tee build.log
+          packer build packer/webserver-ami.pkr.hcl
           grep artifact,0,id build.log
           AMI_ID=$(grep artifact,0,id build.log | awk -F, '{print $6}' | awk -F: '{print $2}')
           echo "Built AMI: $AMI_ID"
@@ -37,30 +37,30 @@ jobs:
 
            
 
-  # deploy-terraform:
-  #   name: Deploy ASG with Terraform
-  #   runs-on: ubuntu-latest
-  #   env:
-  #     AWS_REGION: ${{ secrets.AWS_REGION }}
-  #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  #   steps:
-  #     - name: Checkout repo
-  #       uses: actions/checkout@v3
+  deploy-terraform:
+    name: Deploy ASG with Terraform
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
 
-  #     - name: Install Terraform
-  #       uses: hashicorp/setup-terraform@v2
-  #       with:
-  #         terraform_version: "1.9.0"
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: "1.9.0"
 
-  #     - name: Terraform Init
-  #       run: terraform init
-  #       working-directory: terraform
+      - name: Terraform Init
+        run: terraform init
+        working-directory: terraform
 
-  #     - name: Terraform Plan
-  #       run: terraform plan 
-  #       working-directory: terraform
+      - name: Terraform Plan
+        run: terraform plan "ami_id=$AMI_ID"
+        working-directory: terraform
 
-  #     - name: Terraform Apply
-  #       run: terraform apply -auto-approve  
-  #       working-directory: terraform
+      - name: Terraform Apply
+        run: terraform apply -auto-approve -var "ami_id=$AMI_ID"
+        working-directory: terraform
