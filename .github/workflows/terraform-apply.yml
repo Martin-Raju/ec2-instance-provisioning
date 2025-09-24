@@ -59,9 +59,9 @@ jobs:
         working-directory: terraform
 
       - name: Terraform Plan
-        run: terraform plan -var "ami_id=$AMI_ID"
+        run: terraform plan -var "ami_id=${{ needs.build-ami.outputs.ami_id }}"
         working-directory: terraform
 
       - name: Terraform Apply
-        run: terraform apply -auto-approve -var "ami_id=$AMI_ID"
+        run: terraform apply -auto-approve -var "ami_id=${{ needs.build-ami.outputs.ami_id }}"
         working-directory: terraform
