@@ -79,12 +79,12 @@ module "asg" {
       on_demand_percentage_above_base_capacity = var.on_demand_percentage_above_base_capacity
       spot_allocation_strategy                 = "lowest-price"
       on_demand_allocation_strategy            = "prioritized"
-      spot_instance_pools                      = 5
+      spot_instance_pools                      = 4
       #spot_max_price                           = var.spot_max_price
     }
 
     override = [
-      { instance_type = "t3.small", spot_price = "0.0090" },
+      { instance_type = "t3.small", spot_price = "0.0070" },
       { instance_type = "t3.micro", spot_price = "0.004" },
       { instance_type = "t3.nano", spot_price = "0.0017" },
       { instance_type = "t3.medium", spot_price = "0.02" }
