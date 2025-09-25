@@ -66,21 +66,28 @@ module "asg" {
   security_groups            = [module.security_group.security_group_id]
   use_mixed_instances_policy = true
 
+  user_data = base64encode(<<-EOT
+    #!/bin/bash
+    yum install -y stress
+    stress --cpu 3 --timeout 600 &
+  EOT
+  )
+
   mixed_instances_policy = {
     instances_distribution = {
-      base_capacity                            = 1
+      base_capacity                            = 0
       on_demand_percentage_above_base_capacity = var.on_demand_percentage_above_base_capacity
       spot_allocation_strategy                 = "lowest-price"
       on_demand_allocation_strategy            = "prioritized"
-      spot_instance_pools                      = 3
-      spot_max_price                           = var.spot_max_price
+      spot_instance_pools                      = 4
+      #spot_max_price                           = var.spot_max_price
     }
 
     override = [
-      { instance_type = var.instance_type_p1 },
-      { instance_type = var.instance_type_p2 },
-      { instance_type = var.instance_type_p3 },
-      { instance_type = var.instance_type_p4 }
+      { instance_type = var.instance_type_p1, spot_price = var.spot_price_p1 },
+      { instance_type = var.instance_type_p2, spot_price = var.spot_price_p2 },
+      { instance_type = var.instance_type_p3, spot_price = var.spot_price_p3 },
+      { instance_type = var.instance_type_p4, spot_price = var.spot_price_p4 }
     ]
   }
 

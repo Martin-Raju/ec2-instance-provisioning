@@ -20,3 +20,7 @@ output "security_group_id" {
 output "ami_id" {
   value = var.ami_id
 }
+
+output "subnet_ids" {
+  value = data.aws_subnets.default.ids
+}
