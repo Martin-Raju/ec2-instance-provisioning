@@ -60,7 +60,6 @@ jobs:
 
       - name: Terraform Plan
         run: terraform plan -var "ami_id=${{ needs.build-ami.outputs.ami_id }}"
-        run: terraform plan
         working-directory: terraform
 
       - name: Terraform Apply
