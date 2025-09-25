@@ -77,10 +77,10 @@ module "asg" {
     }
 
     override = [
-      { instance_type = "t3.small", spot_price = "0.005" },
-      { instance_type = "t3.medium", spot_price = "0.02" },
-      { instance_type = "t3a.small", spot_price = "0.005" },
-      { instance_type = "t3a.medium", spot_price = "0.02" }
+      { instance_type = "t3.small", spot_price = "0.008" },
+      { instance_type = "t3.micro", spot_price = "0.004" },
+      { instance_type = "t3.nano", spot_price = "0.0019" },
+      { instance_type = "t3.medium", spot_price = "0.02" }
     ]
   }
 
