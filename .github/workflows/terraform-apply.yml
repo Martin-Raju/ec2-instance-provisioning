@@ -31,7 +31,7 @@ jobs:
       # run: packer build  packer/webserver-ami.pkr.hcl
     - name: Packer Build
       id: packer_build
-      run: |
+      # run: |
        # AMI_ID=$(packer build -machine-readable packer/webserver-ami.pkr.hcl \
         # | awk -F, '/artifact,0,id/ {print $6}' | awk -F: '{print $2}')
        # echo "Built AMI: $AMI_ID"
