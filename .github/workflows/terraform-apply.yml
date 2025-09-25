@@ -13,8 +13,8 @@ jobs:
        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
        AWS_REGION: ${{ secrets.AWS_REGION }}
-    # outputs:
-      # ami_id: ${{ steps.packer_build.outputs.ami_id }}
+    outputs:
+      ami_id: ${{ steps.packer_build.outputs.ami_id }}
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v3
@@ -27,15 +27,15 @@ jobs:
     - name: Packer Init
       run: packer init  packer/webserver-ami.pkr.hcl
 
-    - name: Packer build
-      run: packer build  packer/webserver-ami.pkr.hcl
-    # - name: Packer Build
-      # id: packer_build
-      # run: |
-       # AMI_ID=$(packer build -machine-readable packer/webserver-ami.pkr.hcl \
-        # | awk -F, '/artifact,0,id/ {print $6}' | awk -F: '{print $2}')
-       # echo "Built AMI: $AMI_ID"
-       # echo "ami_id=$AMI_ID" >> $GITHUB_OUTPUT
+    # - name: Packer build
+      # run: packer build  packer/webserver-ami.pkr.hcl
+    - name: Packer Build
+      id: packer_build
+      run: |
+       AMI_ID=$(packer build -machine-readable packer/webserver-ami.pkr.hcl \
+        | awk -F, '/artifact,0,id/ {print $6}' | awk -F: '{print $2}')
+       echo "Built AMI: $AMI_ID"
+       echo "ami_id=$AMI_ID" >> $GITHUB_OUTPUT
 
            
 
