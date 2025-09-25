@@ -75,7 +75,7 @@ module "asg" {
 
   mixed_instances_policy = {
     instances_distribution = {
-      base_capacity                            = 0
+      base_capacity                            = 1
       on_demand_percentage_above_base_capacity = var.on_demand_percentage_above_base_capacity
       spot_allocation_strategy                 = "lowest-price"
       on_demand_allocation_strategy            = "prioritized"
@@ -84,10 +84,10 @@ module "asg" {
     }
 
     override = [
-      { instance_type = "t3.small", spot_price = "0.0070" },
-      { instance_type = "t3.micro", spot_price = "0.004" },
-      { instance_type = "t3.nano", spot_price = "0.0017" },
-      { instance_type = "t3.medium", spot_price = "0.02" }
+      { instance_type = var.instance_type_p1, spot_price = spot_price_p1 },
+      { instance_type = var.instance_type_p2, spot_price = spot_price_p2 },
+      { instance_type = var.instance_type_p3, spot_price = spot_price_p3 },
+      { instance_type = var.instance_type_p4, spot_price = spot_price_p4 }
     ]
   }
 
