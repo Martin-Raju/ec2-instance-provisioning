@@ -7,17 +7,28 @@ packer {
   }
 }
 
-source "amazon-ebs" "from_running_instance" {
+source "amazon-ebs" "from_base" {
   region        = "us-east-1"
   source_ami    = "ami-08982f1c5bf93d976"
   instance_type = "t3.micro"
   ssh_username  = "ec2-user"
-  associate_public_ip_address = true
   ami_name = "packer-ami-from-ec2-{{timestamp}}"
 }
 
 build {
-  sources = ["source.amazon-ebs.from_running_instance"]
+  sources = ["source.amazon-ebs.from_base"]
+  provisioner "shell" {
+    inline = [
+      "sudo yum update -y",
+      "sudo yum install -y httpd git",
+      "sudo systemctl enable httpd",
+      "sudo rm -rf /var/www/html/*",  # clean default files
+      "git clone https://github.com/Martin-Raju/web-hosting.git /var/www/html",
+      "sudo chown -R apache:apache /var/www/html",
+      "sudo chmod -R 755 /var/www/html",
+	  "sudo systemctl start httpd"
+    ]
+  }
 }
 
 
