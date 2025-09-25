@@ -11,8 +11,8 @@ source "amazon-ebs" "from_running_instance" {
   region        = "us-east-1"
   source_ami    = "ami-08982f1c5bf93d976"
   instance_type = "t3.micro"
-  ssh_username  = "ubuntu"
-
+  ssh_username  = "ec2-user"
+  associate_public_ip_address = true
   ami_name = "packer-ami-from-ec2-{{timestamp}}"
 }
 
