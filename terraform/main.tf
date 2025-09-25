@@ -66,6 +66,13 @@ module "asg" {
   security_groups            = [module.security_group.security_group_id]
   use_mixed_instances_policy = true
 
+  user_data = base64encode(<<-EOT
+    #!/bin/bash
+    yum install -y stress
+    stress --cpu 3 --timeout 600 &
+  EOT
+  )
+
   mixed_instances_policy = {
     instances_distribution = {
       base_capacity                            = 0
@@ -79,7 +86,7 @@ module "asg" {
     override = [
       { instance_type = "t3.small", spot_price = "0.008" },
       { instance_type = "t3.micro", spot_price = "0.004" },
-      { instance_type = "t3.nano", spot_price = "0.0019" },
+      { instance_type = "t3.nano", spot_price = "0.0016" },
       { instance_type = "t3.medium", spot_price = "0.02" }
     ]
   }
