@@ -68,7 +68,7 @@ module "asg" {
 
   mixed_instances_policy = {
     instances_distribution = {
-      base_capacity                            = 1
+      base_capacity                            = 0
       on_demand_percentage_above_base_capacity = var.on_demand_percentage_above_base_capacity
       spot_allocation_strategy                 = "lowest-price"
       on_demand_allocation_strategy            = "prioritized"
