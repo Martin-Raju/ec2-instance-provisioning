@@ -24,10 +24,11 @@ build {
       "sudo systemctl enable httpd",
       "sudo systemctl start httpd",
       "sudo rm -rf /var/www/html/*",
-      "git clone https://github.com/Martin-Raju/web-hosting.git /var/www/html",
+      "git clone https://your-repo-url.git /tmp/html",
+      "sudo mv /tmp/html/* /var/www/html",
       "sudo chown -R apache:apache /var/www/html",
       "sudo chmod -R 755 /var/www/html",
-	  "sudo systemctl start httpd"
+	  "sudo systemctl restart httpd"
     ]
   }
 }
