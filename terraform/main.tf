@@ -48,6 +48,10 @@ module "security_group" {
   ]
 }
 
+locals {
+  ami_id = var.use_custom_ami && var.running_instance_id != "" ? var.running_instance_id : var.default_ami_id
+}
+
 resource "aws_ami_from_instance" "custom_ami" {
   count              = var.use_custom_ami ? 1 : 0
   name               = "webserver-ami-${formatdate("YYYYMMDDHHMM", timestamp())}"

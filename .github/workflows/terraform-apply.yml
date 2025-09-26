@@ -106,6 +106,8 @@ jobs:
 
       - name: Terraform Apply
         run: |
+          echo "use_custom_ami=${{ github.event.inputs.use_custom_ami }}"
+          echo "running_instance_id=${{ github.event.inputs.running_instance_id }}"
           if [ "${{ github.event.inputs.use_custom_ami }}" = "true" ]; then
             if [ -z "${{ github.event.inputs.running_instance_id }}" ]; then
               echo "Error: running_instance_id must be provided when use_custom_ami is true."
