@@ -1,16 +1,11 @@
-name: Terraform Deploy with Optional AMI
+name: Terraform Deploy with Custom AMI
 
 on:
   workflow_dispatch:
     inputs:
-      use_custom_ami:
-        description: "Use AMI from running instance?"
-        required: false
-        default: "false"
-        type: boolean
       running_instance_id:
-        description: "ID of running instance (required if using custom AMI)"
-        required: false
+        description: "ID of running instance to use as AMI"
+        required: true
         default: ""
 
 jobs:
@@ -20,7 +15,8 @@ jobs:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      DEFAULT_AMI_ID: "ami-01b6d88af12965bb6" # your default AMI
+    outputs:
+       running_instance_id: ${{ github.event.inputs.running_instance_id }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
@@ -33,33 +29,11 @@ jobs:
       - name: Terraform Init
         run: terraform init
         working-directory: terraform
+        
+      - name: Terraform Plan
+        run: terraform plan -var "running_instance_id=${{ github.event.inputs.running_instance_id }}"
+        working-directory: terraform
 
       - name: Terraform Apply
-        run: |
-          USE_CUSTOM_AMI="${{ github.event.inputs.use_custom_ami }}"
-          RUNNING_INSTANCE_ID="${{ github.event.inputs.running_instance_id }}"
-
-          # Validate inputs
-          if [ "$USE_CUSTOM_AMI" = "true" ] && [ -z "$RUNNING_INSTANCE_ID" ]; then
-            echo "Error: running_instance_id must be provided when use_custom_ami is true."
-            exit 1
-          fi
-
-          if [ "$USE_CUSTOM_AMI" != "true" ] && [ -n "$RUNNING_INSTANCE_ID" ]; then
-            echo "Warning: running_instance_id will be ignored because use_custom_ami is false."
-          fi
-
-          # Decide which AMI to use
-          if [ "$USE_CUSTOM_AMI" = "true" ]; then
-            AMI_TO_USE="$RUNNING_INSTANCE_ID"
-            echo "Using AMI from running instance: $AMI_TO_USE"
-          else
-            AMI_TO_USE="$DEFAULT_AMI_ID"
-            echo "Using default AMI: $AMI_TO_USE"
-          fi
-
-          terraform apply -auto-approve \
-            -var="ami_id=$AMI_TO_USE" \
-            -var="use_custom_ami=$USE_CUSTOM_AMI" \
-            -var="running_instance_id=$RUNNING_INSTANCE_ID"
+        run: terraform apply -auto-approve -var "running_instance_id=${{ github.event.inputs.running_instance_id }}"
         working-directory: terraform
