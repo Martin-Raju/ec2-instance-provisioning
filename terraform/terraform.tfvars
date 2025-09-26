@@ -1,7 +1,5 @@
 
-aws_region     = "us-east-1"
-#default_ami_id = "ami-01b6d88af12965bb6"
-running_instance_id                      = "i-0267bc86798940199"
+aws_region                               = "us-east-1"
 key_name                                 = "test01"
 environment                              = "dev"
 asg_min_size                             = 1
@@ -17,4 +15,6 @@ instance_type_p3                         = "t3.nano"
 spot_price_p3                            = "0.0017"
 instance_type_p4                         = "t3.medium"
 spot_price_p4                            = "0.01"
-#spot_max_price                           = ".02"
+#spot_max_price                          = ".02"
+#default_ami_id                          = "ami-01b6d88af12965bb6"
+#running_instance_id                     = "i-0267bc86798940199"
