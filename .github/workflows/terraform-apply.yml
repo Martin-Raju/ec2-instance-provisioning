@@ -73,16 +73,16 @@ name: Terraform Deploy with Optional AMI
 
 on:
   workflow_dispatch:
-    inputs:
-      use_custom_ami:
-        description: "Use AMI from running instance?"
-        required: true
-        default: "false"
-        type: boolean
-      running_instance_id:
-        description: "ID of running instance (required if using custom AMI)"
-        required: false
-        default: ""
+    # inputs:
+      # use_custom_ami:
+        # description: "Use AMI from running instance?"
+        # required: true
+        # default: "false"
+        # type: boolean
+      # running_instance_id:
+        # description: "ID of running instance (required if using custom AMI)"
+        # required: false
+        # default: ""
 
 jobs:
   deploy-terraform:
