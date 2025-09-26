@@ -1,6 +1,7 @@
 
-aws_region = "us-east-1"
-#ami_id                                   = "ami-08982f1c5bf93d976"
+
+aws_region                               = "us-east-1"
+#ami_id                                   = "ami-0b09ffb6d8b58ca91"
 key_name                                 = "test01"
 environment                              = "dev"
 asg_min_size                             = 1
