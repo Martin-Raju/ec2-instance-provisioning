@@ -53,7 +53,6 @@ resource "aws_ami_from_instance" "web_ami" {
   name               = "webserver-ami-${timestamp()}"
   source_instance_id = var.ami_id 
   description        = "AMI with web server and code"
-  no_reboot          = false
 
   tags = {
     Name        = "webserver-ami"
