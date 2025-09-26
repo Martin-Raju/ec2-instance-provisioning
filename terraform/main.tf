@@ -61,6 +61,36 @@ resource "aws_ami_from_instance" "web_ami" {
   }
 }
 
+module "alb" {
+  source  = "terraform-aws-modules/alb/aws"
+  version = "9.0.0"
+
+  name               = "web-alb"
+  load_balancer_type = "application"
+  security_groups    = [module.security_group.security_group_id]
+  subnets            = data.aws_subnets.default.ids
+
+  enable_deletion_protection = false
+  idle_timeout               = 60
+
+  target_groups = [
+    {
+      name_prefix      = "web-tg"
+      backend_protocol = "HTTP"
+      backend_port     = 80
+      target_type      = "instance"
+      health_check = {
+        path                = "/"
+        protocol            = "HTTP"
+        healthy_threshold   = 2
+        unhealthy_threshold = 2
+        timeout             = 5
+        interval            = 30
+      }
+    }
+  ]
+}
+
 # --- Auto Scaling Group with Launch Template and Mixed Instances ---
 module "asg" {
   source                     = "./modules/terraform-aws-autoscaling-8.3.1"
@@ -79,6 +109,8 @@ module "asg" {
   security_groups            = [module.security_group.security_group_id]
   use_mixed_instances_policy = true
 
+  target_group_arns = [module.alb.target_groups_arns[0]]
+  
   user_data = base64encode(<<-EOT
     #!/bin/bash
     yum install -y stress
