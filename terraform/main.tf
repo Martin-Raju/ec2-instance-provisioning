@@ -50,7 +50,7 @@ module "security_group" {
 
 # Capture AMI from running instance
 resource "aws_ami_from_instance" "web_ami" {
-  name = "webserver-ami-${formatdate("YYYYMMDDHHMM", timestamp())}"
+  name = "webserver-ami-${formatdate("YYYYMMDDHHMMSS", timestamp())}"
 
   source_instance_id = var.running_instance_id
   description        = "AMI with web server and code"
