@@ -105,8 +105,6 @@ module "asg" {
   key_name                   = var.key_name
   security_groups            = [module.security_group.security_group_id]
   use_mixed_instances_policy = true
-
-  alb_target_group_arns = [module.alb.target_groups_arns[0]]
   
   user_data = base64encode(<<-EOT
     #!/bin/bash
