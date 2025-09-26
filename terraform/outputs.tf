@@ -16,3 +16,11 @@ output "security_group_id" {
   description = "The ID of the security group created"
   value       = module.security_group.security_group_id
 }
+# Ami_id
+output "ami_id" {
+  value = var.ami_id
+}
+
+output "subnet_ids" {
+  value = data.aws_subnets.default.ids
+}

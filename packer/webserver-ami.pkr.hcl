@@ -1,33 +1,63 @@
-# Amazon EBS source
-source "amazon-ebs" "webserver" {
-  region            = var.aws_region
-  instance_type     = "t3.micro"
-  ami_name          = var.ami_name
-  ssh_username      = "ec2-user"
-
-  # Amazon Linux 2 base AMI
-  source_ami_filter {
-    filters = {
-      name                = "amzn2-ami-hvm-2.0.*-x86_64-gp2"
-      virtualization-type = "hvm"
-      root-device-type    = "ebs"
+packer {
+  required_plugins {
+    amazon = {
+      source  = "github.com/hashicorp/amazon"
+      version = "~> 1"
     }
-    owners      = ["amazon"]
-    most_recent = true
   }
+}
+
+source "amazon-ebs" "from_base" {
+  region        = "us-east-1"
+  source_ami    = "ami-08982f1c5bf93d976"
+  instance_type = "t3.micro"
+  ssh_username  = "ec2-user"
+  ami_name = "packer-ami-from-ec2-{{timestamp}}"
 }
 
 build {
-  name    = "webserver-ami-build"
-  sources = ["source.amazon-ebs.webserver"]
-
+  sources = ["source.amazon-ebs.from_base"]
   provisioner "shell" {
     inline = [
       "sudo yum update -y",
-      "sudo yum install -y httpd",
+      "sudo yum install -y httpd git",
       "sudo systemctl enable httpd",
       "sudo systemctl start httpd",
-      "echo '<h1>Welcome to your custom web server on $(hostname)</h1>' | sudo tee /var/www/html/index.html"
+      "sudo rm -rf /var/www/html/*",
+      "git clone https://github.com/Martin-Raju/web-hosting.git /tmp/html",
+      "sudo mv /tmp/html/* /var/www/html",
+      "sudo chown -R apache:apache /var/www/html",
+      "sudo chmod -R 755 /var/www/html",
+	  "sudo systemctl restart httpd"
     ]
   }
 }
+
+
+#source "amazon-ebs" "webserver" {
+#  ami_name      = "my-packer-ami-{{timestamp}}"
+#  instance_type = "t3.micro"
+#  region        = "us-east-1"
+#  source_ami_filter {
+#    filters = {
+#      name                = "ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"
+#      root-device-type    = "ebs"
+#      virtualization-type = "hvm"
+#   }
+#    most_recent = true
+#    owners      = ["amazon"]
+#   }
+#  ssh_username = "ubuntu"
+#}
+
+#build {
+#  sources = ["source.amazon-ebs.webserver"]
+#  provisioner "shell" {
+#    inline = [
+#      "sudo apt-get update",
+#      "sudo apt-get install -y nginx",
+#      "sudo systemctl enable nginx",
+#      "sudo systemctl start nginx"
+#    ]
+#  }
+#}

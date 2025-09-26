@@ -53,10 +53,10 @@ variable "instance_type_p4" {
   type        = string
 }
 
-variable "spot_max_price" {
-  description = "Default instance type for Launch Template "
-  type        = number
-}
+#variable "spot_max_price" {
+#  description = "Default instance type for Launch Template "
+#  type        = number
+#}
 
 variable "on_demand_percentage_above_base_capacity" {
   description = "Percentage of on-demand capacity above base in Mixed Instances Policy"
@@ -68,7 +68,22 @@ variable "cpu_target_value" {
   type        = number
 }
 
-variable "ami_name" {
-  type = string
+variable "spot_price_p1" {
+  description = "Default instance type for Launch Template "
+  type        = number
 }
 
+variable "spot_price_p2" {
+  description = "Default instance type for Launch Template "
+  type        = number
+}
+
+variable "spot_price_p3" {
+  description = "Default instance type for Launch Template "
+  type        = number
+}
+
+variable "spot_price_p4" {
+  description = "Default instance type for Launch Template "
+  type        = number
+}

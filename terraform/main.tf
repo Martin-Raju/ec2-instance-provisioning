@@ -16,8 +16,7 @@ data "aws_subnets" "default" {
 
 # Security Group
 module "security_group" {
-  source      = "terraform-aws-modules/security-group/aws"
-  version     = "~> 5.0"
+  source      = "./modules/terraform-aws-security-group-5.3.0"
   name        = "allow_ssh"
   description = "Allow SSH inbound traffic"
   vpc_id      = data.aws_vpc.default.id
@@ -34,7 +33,7 @@ module "security_group" {
       from_port   = 80
       to_port     = 80
       protocol    = "tcp"
-      cidr_blocks = ["0.0.0.0/0"]
+      cidr_blocks = "0.0.0.0/0"
       description = "HTTP"
     }
   ]
@@ -49,12 +48,23 @@ module "security_group" {
   ]
 }
 
+# Capture AMI from running instance
+resource "aws_ami_from_instance" "web_ami" {
+  name               = "webserver-ami-${timestamp()}"
+  source_instance_id = var.ami_id 
+  description        = "AMI with web server and code"
+  no_reboot          = false
+
+  tags = {
+    Name        = "webserver-ami"
+    Environment = var.environment
+  }
+}
+
 # --- Auto Scaling Group with Launch Template and Mixed Instances ---
 module "asg" {
-  source  = "terraform-aws-modules/autoscaling/aws"
-  version = "~> 8.0"
-
-  name                       = "Test-server-${formatdate("YYYYMMDD-HHmmss", timeadd(timestamp(), "5h30m"))}"
+  source                     = "./modules/terraform-aws-autoscaling-8.3.1"
+  name                       = "Test-server"
   vpc_zone_identifier        = data.aws_subnets.default.ids
   min_size                   = var.asg_min_size
   max_size                   = var.asg_max_size
@@ -64,7 +74,7 @@ module "asg" {
   create_launch_template     = true
   force_delete               = true
   launch_template_name       = "spot-lt"
-  image_id                   = var.custom_ami_id
+  image_id                   = aws_ami_from_instance.web_ami.id
   key_name                   = var.key_name
   security_groups            = [module.security_group.security_group_id]
   use_mixed_instances_policy = true
@@ -78,19 +88,19 @@ module "asg" {
 
   mixed_instances_policy = {
     instances_distribution = {
-      base_capacity                            = 1
+      base_capacity                            = 0
       on_demand_percentage_above_base_capacity = var.on_demand_percentage_above_base_capacity
       spot_allocation_strategy                 = "lowest-price"
       on_demand_allocation_strategy            = "prioritized"
-      spot_instance_pools                      = 3
-      spot_max_price                           = var.spot_max_price
+      spot_instance_pools                      = 4
+      #spot_max_price                           = var.spot_max_price
     }
 
     override = [
-      { instance_type = var.instance_type_p1 },
-      { instance_type = var.instance_type_p2 },
-      { instance_type = var.instance_type_p3 },
-      { instance_type = var.instance_type_p4 }
+      { instance_type = var.instance_type_p1, spot_price = var.spot_price_p1 },
+      { instance_type = var.instance_type_p2, spot_price = var.spot_price_p2 },
+      { instance_type = var.instance_type_p3, spot_price = var.spot_price_p3 },
+      { instance_type = var.instance_type_p4, spot_price = var.spot_price_p4 }
     ]
   }
 
