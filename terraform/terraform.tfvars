@@ -1,6 +1,7 @@
 
 aws_region = "us-east-1"
 ami_id                                   = "ami-01b6d88af12965bb6"
+running_instance_id                      ="i-0e15446251d0c46e8"
 key_name                                 = "test01"
 environment                              = "dev"
 asg_min_size                             = 1

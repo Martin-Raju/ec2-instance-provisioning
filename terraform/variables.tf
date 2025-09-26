@@ -8,6 +8,11 @@ variable "ami_id" {
   type        = string
 }
 
+variable "running_instance_id" {
+  description = "AMI ID for the EC2 instances"
+  type        = string
+}
+
 variable "key_name" {
   description = "Key pair name for SSH access"
   type        = string
