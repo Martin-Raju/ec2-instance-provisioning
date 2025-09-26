@@ -69,6 +69,7 @@ module "alb" {
   load_balancer_type = "application"
   security_groups    = [module.security_group.security_group_id]
   subnets            = data.aws_subnets.default.ids
+  vpc_id             = data.aws_vpc.default.id
 
   target_groups = [
     {
@@ -76,7 +77,6 @@ module "alb" {
       backend_protocol = "HTTP"
       backend_port     = 80
       target_type      = "instance"
-	  vpc_id           = data.aws_vpc.default.id
       health_check = {
         path                = "/"
         protocol            = "HTTP"
