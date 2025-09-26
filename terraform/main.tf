@@ -152,5 +152,5 @@ module "asg" {
 
 resource "aws_autoscaling_attachment" "asg_alb" {
   autoscaling_group_name = module.asg.autoscaling_group_name
-  lb_target_group_arn    = module.alb.alb_target_group_arns[0]
+  lb_target_group_arn    = module.alb.target_group_arns[0]
 }
