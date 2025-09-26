@@ -76,6 +76,7 @@ module "alb" {
       backend_protocol = "HTTP"
       backend_port     = 80
       target_type      = "instance"
+	  vpc_id           = data.aws_vpc.default.id
       health_check = {
         path                = "/"
         protocol            = "HTTP"
