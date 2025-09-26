@@ -78,7 +78,7 @@ module "alb" {
       backend_port     = 80
       target_type      = "instance"
       health_check = {
-        path                = "/"
+        path                = "/index.html"
         protocol            = "HTTP"
         healthy_threshold   = 2
         unhealthy_threshold = 2
