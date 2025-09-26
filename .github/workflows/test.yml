@@ -2,6 +2,10 @@ name: Terraform Deploy with Optional AMI
 
 on:
   workflow_dispatch:
+    branches: 
+     - main 
+     - develop 
+     - develop_23-09-25
     inputs:
       use_custom_ami:
         description: "Use AMI from running instance?"
