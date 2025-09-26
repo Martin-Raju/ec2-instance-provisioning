@@ -63,15 +63,12 @@ resource "aws_ami_from_instance" "web_ami" {
 
 module "alb" {
   source  = "terraform-aws-modules/alb/aws"
-  version = "9.0.0"
+  version = "7.0.0"
 
   name               = "web-alb"
   load_balancer_type = "application"
   security_groups    = [module.security_group.security_group_id]
   subnets            = data.aws_subnets.default.ids
-
-  enable_deletion_protection = false
-  idle_timeout               = 60
 
   target_groups = [
     {
@@ -153,4 +150,9 @@ module "asg" {
     Name        = "Asg-instance"
     Environment = var.environment
   }
+}
+
+resource "aws_autoscaling_attachment" "asg_alb" {
+  autoscaling_group_name = module.asg.autoscaling_group_name
+  alb_target_group_arn   = module.alb.target_groups_arns[0]
 }
