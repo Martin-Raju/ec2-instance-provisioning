@@ -48,18 +48,17 @@ module "security_group" {
   ]
 }
 
-# Capture AMI from running instance
-resource "aws_ami_from_instance" "web_ami" {
-  name = "webserver-ami-${formatdate("YYYYMMDDHHMM", timestamp())}"
-
+resource "aws_ami_from_instance" "custom_ami" {
+  count              = var.use_custom_ami ? 1 : 0
+  name               = "webserver-ami-${formatdate("YYYYMMDDHHMM", timestamp())}"
   source_instance_id = var.running_instance_id
-  description        = "AMI with web server and code"
-
+  description        = "AMI from running instance"
   tags = {
     Name        = "webserver-ami"
     Environment = var.environment
   }
 }
+
 
 # --- Auto Scaling Group with Launch Template and Mixed Instances ---
 module "asg" {
@@ -74,7 +73,7 @@ module "asg" {
   create_launch_template     = true
   force_delete               = true
   launch_template_name       = "spot-lt"
-  image_id                   = aws_ami_from_instance.web_ami.id
+  image_id                   = local.ami_id
   key_name                   = var.key_name
   security_groups            = [module.security_group.security_group_id]
   use_mixed_instances_policy = true

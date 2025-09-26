@@ -3,14 +3,20 @@ variable "aws_region" {
   type        = string
 }
 
-variable "ami_id" {
+variable "default_ami_id" {
   description = "AMI ID for the EC2 instances"
   type        = string
 }
 
 variable "running_instance_id" {
-  description = "AMI ID for the EC2 instances"
+  description = "ID of the running instance to capture AMI from"
   type        = string
+}
+
+variable "use_custom_ami" {
+  description = "Set true to capture AMI from running instance, false to use default AMI"
+  type        = bool
+  default     = false
 }
 
 variable "key_name" {
