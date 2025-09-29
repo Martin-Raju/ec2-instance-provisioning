@@ -163,9 +163,14 @@ module "asg" {
     Environment = var.environment
   }
 }
+
+locals {
+  alb_arn             = var.create_alb ? module.alb[0].lb_arn : data.aws_lb.existing[0].arn
+  alb_target_group_arn = var.create_alb ? module.alb[0].target_group_arns[0] : data.aws_lb.existing[0].arn
+}
 # --- Attach ASG to Target Group ---
 
 resource "aws_autoscaling_attachment" "asg_alb" {
   autoscaling_group_name = module.asg.autoscaling_group_name
-  lb_target_group_arn    = module.alb.target_group_arns[0]
+  lb_target_group_arn    = local.alb_target_group_arn
 }
