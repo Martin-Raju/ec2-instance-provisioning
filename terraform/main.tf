@@ -99,7 +99,7 @@ module "alb" {
 # --- Ignore changes for the ALB ---
 resource "aws_lb" "alb_ignore_changes" {
   #  for_each = { for i, name in [module.alb.this_lb_arn] : i => name }
-  arn = "arn:aws:elasticloadbalancing:${var.aws_region}:${data.aws_caller_identity.current.account_id}:loadbalancer/app/${module.alb.this_lb_id}"
+  arn = arn = "arn:aws:elasticloadbalancing:${var.aws_region}:${data.aws_caller_identity.current.account_id}:loadbalancer/app/${module.alb.this_lb_id}"
 
   lifecycle {
     ignore_changes = [
