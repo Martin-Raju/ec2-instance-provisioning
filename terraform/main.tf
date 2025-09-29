@@ -97,6 +97,22 @@ module "alb" {
   ]
 }
 
+resource "aws_lb" "alb_ignore_changes" {
+  arn = module.alb.this_lb_arn
+
+  lifecycle {
+    ignore_changes = [
+      subnets,
+      security_groups,
+      enable_http2,
+      access_logs,
+      idle_timeout,
+      drop_invalid_header_fields,
+      enable_deletion_protection
+    ]
+  }
+}
+
 # --- Auto Scaling Group with Launch Template and Mixed Instances ---
 module "asg" {
   source                     = "./modules/terraform-aws-autoscaling-8.3.1"
@@ -157,22 +173,6 @@ module "asg" {
     Name        = "Asg-instance"
     Environment = var.environment
   }
-resource "aws_autoscaling_group" "asg_ignore_changes" {
-  for_each = { for i, name in [module.asg.autoscaling_group_name] : i => name }
-  name = each.value
-
-  lifecycle {
-    ignore_changes = [
-      min_size,
-      max_size,
-      desired_capacity,
-      mixed_instances_policy,
-      scaling_policies,
-      tags,
-      user_data
-    ]
-  }
- }
 }
 
 # --- Attach ASG to Target Group ---
