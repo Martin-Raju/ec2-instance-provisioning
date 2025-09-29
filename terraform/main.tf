@@ -157,8 +157,11 @@ module "asg" {
     Name        = "Asg-instance"
     Environment = var.environment
   }
+resource "aws_autoscaling_group" "asg_ignore_changes" {
+  for_each = { for i, name in [module.asg.autoscaling_group_name] : i => name }
+  name = each.value
+
   lifecycle {
-    # Ignore all ASG changes except AMI to launch new instances
     ignore_changes = [
       min_size,
       max_size,
@@ -169,6 +172,7 @@ module "asg" {
       user_data
     ]
   }
+ }
 }
 
 # --- Attach ASG to Target Group ---
