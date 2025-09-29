@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       running_instance_id:
-        description: "ID of running instance to use as AMI"
+        description: "Enter the ID of the running instance to create an AMI"
         required: true
         default: ""
 
