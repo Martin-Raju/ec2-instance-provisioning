@@ -33,15 +33,15 @@ variable "asg_desired_capacity" {
   type        = number
 }
 
-variable "instance_type_p1" {
-  description = "List of instance types for the Mixed Instances ASG"
-  type        = string
-}
+#variable "instance_type_p1" {
+#  description = "List of instance types for the Mixed Instances ASG"
+#  type        = string
+#}
 
-variable "instance_type_p2" {
-  description = "List of instance types for the Mixed Instances ASG"
-  type        = string
-}
+#variable "instance_type_p2" {
+#  description = "List of instance types for the Mixed Instances ASG"
+#  type        = string
+#}
 
 variable "instance_type_p3" {
   description = "List of instance types for the Mixed Instances ASG"
@@ -68,15 +68,15 @@ variable "cpu_target_value" {
   type        = number
 }
 
-variable "spot_price_p1" {
-  description = "Default instance type for Launch Template "
-  type        = number
-}
+#variable "spot_price_p1" {
+#  description = "Default instance type for Launch Template "
+#  type        = number
+#}
 
-variable "spot_price_p2" {
-  description = "Default instance type for Launch Template "
-  type        = number
-}
+#variable "spot_price_p2" {
+#  description = "Default instance type for Launch Template "
+#  type        = number
+#}
 
 variable "spot_price_p3" {
   description = "Default instance type for Launch Template "
@@ -86,4 +86,19 @@ variable "spot_price_p3" {
 variable "spot_price_p4" {
   description = "Default instance type for Launch Template "
   type        = number
+}
+
+variable "create_alb" {
+  description = "Whether to create a new ALB (true) or use an existing one (false)"
+  type        = bool
+}
+
+variable "existing_alb_name" {
+  description = "Name of existing ALB to use if create_alb=false"
+  type        = string
+}
+
+variable "existing_tg_name" {
+  description = "Name of existing Target Group to use if create_alb=false"
+  type        = string
 }

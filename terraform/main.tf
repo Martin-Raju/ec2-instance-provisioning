@@ -14,11 +14,21 @@ data "aws_subnets" "default" {
   }
 }
 
+data "aws_lb" "existing" {
+  count = var.create_alb ? 0 : 1
+  name  = var.existing_alb_name
+}
+
+data "aws_lb_target_group" "existing" {
+  count = var.create_alb ? 0 : 1
+  name  = var.existing_tg_name
+}
+
 # Security Group
 module "security_group" {
   source      = "./modules/terraform-aws-security-group-5.3.0"
-  name        = "allow_ssh"
-  description = "Allow SSH inbound traffic"
+  name        = "allow_web"
+  description = "Allow HTTP/SSH inbound traffic"
   vpc_id      = data.aws_vpc.default.id
 
   ingress_with_cidr_blocks = [
@@ -50,7 +60,7 @@ module "security_group" {
 
 # Capture AMI from running instance
 resource "aws_ami_from_instance" "web_ami" {
-  name = "webserver-ami-${formatdate("YYYYMMDDHHMM", timestamp())}"
+  name = "webserver-ami-${formatdate("YYYYMMDDHHMMss", timestamp())}"
 
   source_instance_id = var.running_instance_id
   description        = "AMI with web server and code"
@@ -61,6 +71,40 @@ resource "aws_ami_from_instance" "web_ami" {
   }
 }
 
+module "alb" {
+  source             = "terraform-aws-modules/alb/aws"
+  version            = "7.0.0"
+  count              = var.create_alb ? 1 : 0
+  name               = "web-alb-${substr(timestamp(), 8, 4)}"
+  load_balancer_type = "application"
+  security_groups    = [module.security_group.security_group_id]
+  subnets            = data.aws_subnets.default.ids
+  vpc_id             = data.aws_vpc.default.id
+  target_groups = [
+    {
+      name_prefix      = "web-tg"
+      backend_protocol = "HTTP"
+      backend_port     = 80
+      target_type      = "instance"
+      health_check = {
+        path                = "/"
+        protocol            = "HTTP"
+        healthy_threshold   = 2
+        unhealthy_threshold = 2
+        timeout             = 5
+        interval            = 30
+      }
+    }
+  ]
+
+  http_tcp_listeners = [
+    {
+      port               = 80
+      protocol           = "HTTP"
+      target_group_index = 0
+    }
+  ]
+}
 
 # --- Auto Scaling Group with Launch Template and Mixed Instances ---
 module "asg" {
@@ -79,7 +123,7 @@ module "asg" {
   key_name                   = var.key_name
   security_groups            = [module.security_group.security_group_id]
   use_mixed_instances_policy = true
-  
+
   user_data = base64encode(<<-EOT
     #!/bin/bash
     yum install -y stress
@@ -98,8 +142,8 @@ module "asg" {
     }
 
     override = [
-      { instance_type = var.instance_type_p1, spot_price = var.spot_price_p1 },
-      { instance_type = var.instance_type_p2, spot_price = var.spot_price_p2 },
+      #{ instance_type = var.instance_type_p1, spot_price = var.spot_price_p1 },
+      #{ instance_type = var.instance_type_p2, spot_price = var.spot_price_p2 },
       { instance_type = var.instance_type_p3, spot_price = var.spot_price_p3 },
       { instance_type = var.instance_type_p4, spot_price = var.spot_price_p4 }
     ]
@@ -123,4 +167,18 @@ module "asg" {
     Environment = var.environment
   }
 }
+locals {
+  alb_target_group_arn = var.create_alb ? module.alb[0].target_group_arns[0] : data.aws_lb_target_group.existing[0].arn
+}
 
+# --- Attach ASG to Target Group ---
+
+resource "aws_autoscaling_attachment" "asg_alb" {
+
+  autoscaling_group_name = module.asg.autoscaling_group_name
+  lb_target_group_arn    = local.alb_target_group_arn
+  depends_on = [
+    module.asg,
+    module.alb
+  ]
+}
