@@ -17,8 +17,8 @@ data "aws_subnets" "default" {
 # Security Group
 module "security_group" {
   source      = "./modules/terraform-aws-security-group-5.3.0"
-  name        = "allow_ssh"
-  description = "Allow SSH inbound traffic"
+  name        = "allow_web"
+  description = "Allow HTTP/SSH inbound traffic"
   vpc_id      = data.aws_vpc.default.id
 
   ingress_with_cidr_blocks = [
@@ -78,12 +78,23 @@ module "alb" {
       backend_port     = 80
       target_type      = "instance"
       health_check = {
-        path                = "/index.html"
+        path                = "/"
         protocol            = "HTTP"
         healthy_threshold   = 2
         unhealthy_threshold = 2
         timeout             = 5
         interval            = 30
+      }
+    }
+  ]
+
+  listeners = [
+    {
+      port     = 80
+      protocol = "HTTP"
+      default_action = {
+        type  = "forward"
+        target_group_index = 0
       }
     }
   ]
@@ -150,6 +161,8 @@ module "asg" {
     Environment = var.environment
   }
 }
+
+# --- Attach ASG to Target Group ---
 
 resource "aws_autoscaling_attachment" "asg_alb" {
   autoscaling_group_name = module.asg.autoscaling_group_name
