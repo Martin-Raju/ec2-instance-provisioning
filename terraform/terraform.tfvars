@@ -20,3 +20,4 @@ spot_price_p4    = "0.01"
 #running_instance_id                     = "i-0267bc86798940199"
 existing_alb_name = "web-alb"
 create_alb        = false
+existing_tg_name  = "web-tg"
