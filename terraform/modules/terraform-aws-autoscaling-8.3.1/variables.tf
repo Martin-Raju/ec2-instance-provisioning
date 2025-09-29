@@ -579,10 +579,3 @@ variable "putin_khuylo" {
   type        = bool
   default     = true
 }
-###############updated######
-variable "lifecycle_ignore_changes" {
-  description = "List of attributes to ignore changes for in the ASG resource"
-  type        = list(string)
-  default     = [] # empty by default
-}
-############################

@@ -96,7 +96,6 @@ module "alb" {
     }
   ]
 }
-
 # --- Auto Scaling Group with Launch Template and Mixed Instances ---
 module "asg" {
   source                     = "./modules/terraform-aws-autoscaling-8.3.1"
@@ -157,11 +156,10 @@ module "asg" {
     Name        = "Asg-instance"
     Environment = var.environment
   }
-  lifecycle_ignore_changes = ["desired_capacity"]
-
+  lifecycle {
+    ignore_changes = all
+  }
 }
-
-
 # --- Attach ASG to Target Group ---
 
 resource "aws_autoscaling_attachment" "asg_alb" {

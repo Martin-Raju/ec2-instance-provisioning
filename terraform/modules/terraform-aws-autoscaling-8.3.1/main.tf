@@ -681,7 +681,6 @@ resource "aws_autoscaling_group" "idc" {
   default_cooldown          = var.default_cooldown
   default_instance_warmup   = var.default_instance_warmup
   protect_from_scale_in     = var.protect_from_scale_in
-
   # Use `traffic_source_identifier`/`traffic_source_type` instead
   # load_balancers    = var.load_balancers
   # target_group_arns = var.target_group_arns
@@ -718,11 +717,6 @@ resource "aws_autoscaling_group" "idc" {
       role_arn                = try(initial_lifecycle_hook.value.role_arn, null)
     }
   }
-  ############updated################
-  lifecycle {
-    ignore_changes = var.lifecycle_ignore_changes
-  }
-  ##################################
 
   dynamic "instance_maintenance_policy" {
     for_each = length(var.instance_maintenance_policy) > 0 ? [var.instance_maintenance_policy] : []
