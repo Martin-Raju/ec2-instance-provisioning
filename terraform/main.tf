@@ -156,10 +156,6 @@ module "asg" {
     Name        = "Asg-instance"
     Environment = var.environment
   }
-  lifecycle {
-    create_before_destroy = true
-    ignore_changes        = ["desired_capacity"]
-  }
 }
 # --- Attach ASG to Target Group ---
 
