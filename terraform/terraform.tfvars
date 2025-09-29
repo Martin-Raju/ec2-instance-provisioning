@@ -18,5 +18,5 @@ spot_price_p4    = "0.01"
 #spot_max_price                          = ".02"
 #default_ami_id                          = "ami-01b6d88af12965bb6"
 #running_instance_id                     = "i-0267bc86798940199"
-existing_alb_name                        = "web-alb"
-create_alb                               = false
+existing_alb_name = "web-alb"
+create_alb        = false

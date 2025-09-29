@@ -68,14 +68,14 @@ resource "aws_ami_from_instance" "web_ami" {
 
 module "alb" {
   source  = "terraform-aws-modules/alb/aws"
-  version = "9.0.0"
+  version = "7.0.0"
 
-  name               = "web-alb-${substr(timestamp(),8,4)}"
+  name               = "web-alb-${substr(timestamp(), 8, 4)}"
   load_balancer_type = "application"
   security_groups    = [module.security_group.security_group_id]
   subnets            = data.aws_subnets.default.ids
   vpc_id             = data.aws_vpc.default.id
-  count = var.create_alb ? 1 : 0
+  count              = var.create_alb ? 1 : 0
   target_groups = [
     {
       name_prefix      = "web-tg"

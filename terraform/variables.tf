@@ -87,3 +87,13 @@ variable "spot_price_p4" {
   description = "Default instance type for Launch Template "
   type        = number
 }
+
+variable "create_alb" {
+  description = "Whether to create a new ALB (true) or use an existing one (false)"
+  type        = bool
+}
+
+variable "existing_alb_name" {
+  description = "Name of existing ALB to use if create_alb=false"
+  type        = string
+}
