@@ -157,7 +157,7 @@ module "asg" {
     Name        = "Asg-instance"
     Environment = var.environment
   }
-lifecycle {
+  lifecycle {
     create_before_destroy = true
     ignore_changes = [
       desired_capacity,
