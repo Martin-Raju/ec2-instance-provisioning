@@ -14,6 +14,11 @@ data "aws_subnets" "default" {
   }
 }
 
+data "aws_lb" "existing" {
+  count = var.create_alb ? 0 : 1
+  name  = var.existing_alb_name
+}
+
 # Security Group
 module "security_group" {
   source      = "./modules/terraform-aws-security-group-5.3.0"
@@ -50,7 +55,7 @@ module "security_group" {
 
 # Capture AMI from running instance
 resource "aws_ami_from_instance" "web_ami" {
-  name = "webserver-ami-${formatdate("YYYYMMDDHHMM", timestamp())}"
+  name = "webserver-ami-${formatdate("YYYYMMDDHHMMss", timestamp())}"
 
   source_instance_id = var.running_instance_id
   description        = "AMI with web server and code"
@@ -63,14 +68,14 @@ resource "aws_ami_from_instance" "web_ami" {
 
 module "alb" {
   source  = "terraform-aws-modules/alb/aws"
-  version = "8.0.0"
+  version = "9.0.0"
 
-  name               = "web-alb"
+  name               = "web-alb-${substr(timestamp(),8,4)}"
   load_balancer_type = "application"
   security_groups    = [module.security_group.security_group_id]
   subnets            = data.aws_subnets.default.ids
   vpc_id             = data.aws_vpc.default.id
-
+  count = var.create_alb ? 1 : 0
   target_groups = [
     {
       name_prefix      = "web-tg"
