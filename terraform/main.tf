@@ -157,6 +157,7 @@ module "asg" {
     Environment = var.environment
   }
   lifecycle {
+    create_before_destroy = true
     ignore_changes = all
   }
 }
