@@ -88,13 +88,22 @@ module "alb" {
     }
   ]
 
-http_tcp_listeners = [
+  http_tcp_listeners = [
     {
       port               = 80
       protocol           = "HTTP"
       target_group_index = 0
     }
   ]
+
+  lifecycle = {
+    ignore_changes = [
+      security_groups,
+      subnets,
+      target_groups,
+      http_tcp_listeners
+    ]
+  }
 }
 
 # --- Auto Scaling Group with Launch Template and Mixed Instances ---
@@ -133,7 +142,7 @@ module "asg" {
     }
 
     override = [
-  #    { instance_type = var.instance_type_p1, spot_price = var.spot_price_p1 },
+      #    { instance_type = var.instance_type_p1, spot_price = var.spot_price_p1 },
       { instance_type = var.instance_type_p2, spot_price = var.spot_price_p2 },
       { instance_type = var.instance_type_p3, spot_price = var.spot_price_p3 },
       { instance_type = var.instance_type_p4, spot_price = var.spot_price_p4 }
@@ -156,6 +165,17 @@ module "asg" {
   tags = {
     Name        = "Asg-instance"
     Environment = var.environment
+  }
+
+  lifecycle = {
+    ignore_changes = [
+      desired_capacity,
+      min_size,
+      max_size,
+      mixed_instances_policy,
+      scaling_policies,
+      tags
+    ]
   }
 }
 
