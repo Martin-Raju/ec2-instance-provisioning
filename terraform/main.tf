@@ -99,7 +99,7 @@ module "alb" {
 # --- Ignore changes for the ALB ---
 resource "aws_lb" "alb_ignore_changes" {
   #  for_each = { for i, name in [module.alb.this_lb_arn] : i => name }
-  arn = module.alb.this_lb_arn
+  arn = module.alb.alb_arn
 
   lifecycle {
     ignore_changes = [
