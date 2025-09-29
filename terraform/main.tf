@@ -61,6 +61,34 @@ resource "aws_ami_from_instance" "web_ami" {
   }
 }
 
+module "alb" {
+  source  = "terraform-aws-modules/alb/aws"
+  version = "7.0.0"
+
+  name               = "web-alb"
+  load_balancer_type = "application"
+  security_groups    = [module.security_group.security_group_id]
+  subnets            = data.aws_subnets.default.ids
+  vpc_id             = data.aws_vpc.default.id
+
+  target_groups = [
+    {
+      name_prefix      = "web-tg"
+      backend_protocol = "HTTP"
+      backend_port     = 80
+      target_type      = "instance"
+      health_check = {
+        path                = "/index.html"
+        protocol            = "HTTP"
+        healthy_threshold   = 2
+        unhealthy_threshold = 2
+        timeout             = 5
+        interval            = 30
+      }
+    }
+  ]
+}
+
 # --- Auto Scaling Group with Launch Template and Mixed Instances ---
 module "asg" {
   source                     = "./modules/terraform-aws-autoscaling-8.3.1"
@@ -121,4 +149,9 @@ module "asg" {
     Name        = "Asg-instance"
     Environment = var.environment
   }
+}
+
+resource "aws_autoscaling_attachment" "asg_alb" {
+  autoscaling_group_name = module.asg.autoscaling_group_name
+  lb_target_group_arn    = module.alb.target_group_arns[0]
 }
