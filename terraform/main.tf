@@ -95,11 +95,17 @@ module "alb" {
       target_group_index = 0
     }
   ]
+}
+# --- Ignore changes for the ALB ---
+resource "aws_lb" "alb_ignore_changes" {
+  #  for_each = { for i, name in [module.alb.this_lb_arn] : i => name }
+  arn = module.alb.this_lb_arn
 
-  lifecycle = {
+  lifecycle {
     ignore_changes = [
       security_groups,
       subnets,
+      enable_http2,
       target_groups,
       http_tcp_listeners
     ]
