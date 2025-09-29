@@ -97,6 +97,10 @@ module "alb" {
   ]
 }
 
+data "aws_lb" "web_alb" {
+  arn = module.alb.alb_arn
+}
+
 resource "aws_lb" "alb_ignore_changes" {
   arn = module.alb.this_lb_arn
 
