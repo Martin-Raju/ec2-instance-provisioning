@@ -101,5 +101,4 @@ variable "existing_alb_name" {
 variable "existing_tg_name" {
   description = "Name of existing Target Group to use if create_alb=false"
   type        = string
-
 }
