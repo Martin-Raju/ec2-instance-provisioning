@@ -157,23 +157,17 @@ module "asg" {
     Name        = "Asg-instance"
     Environment = var.environment
   }
-}
-
-resource "aws_autoscaling_group" "asg_ignore_changes" {
-  name = module.asg.autoscaling_group_name
-
-  lifecycle {
+lifecycle {
+    create_before_destroy = true
     ignore_changes = [
-      min_size,
-      max_size,
       desired_capacity,
-      mixed_instances_policy,
-      scaling_policies,
-      tags,
-      user_data
+      load_balancers,
+      target_group_arns,
     ]
   }
+
 }
+
 
 # --- Attach ASG to Target Group ---
 
