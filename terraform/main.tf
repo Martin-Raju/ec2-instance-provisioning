@@ -95,7 +95,14 @@ module "alb" {
       target_group_index = 0
     }
   ]
+  lifecycle {
+    ignore_changes = [
+      target_groups,
+      http_tcp_listeners,
+    ]
+  }
 }
+
 # --- Auto Scaling Group with Launch Template and Mixed Instances ---
 module "asg" {
   source                     = "./modules/terraform-aws-autoscaling-8.3.1"
