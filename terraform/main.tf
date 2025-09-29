@@ -19,6 +19,11 @@ data "aws_lb" "existing" {
   name  = var.existing_alb_name
 }
 
+data "aws_lb_target_group" "existing" {
+  count = var.create_alb ? 0 : 1
+  name  = var.existing_tg_name
+}
+
 # Security Group
 module "security_group" {
   source      = "./modules/terraform-aws-security-group-5.3.0"
@@ -165,8 +170,8 @@ module "asg" {
 }
 
 locals {
-  alb_arn             = var.create_alb ? module.alb[0].lb_arn : data.aws_lb.existing[0].arn
-  alb_target_group_arn = var.create_alb ? module.alb[0].target_group_arns[0] : data.aws_lb.existing[0].arn
+  alb_arn              = var.create_alb ? module.alb[0].lb_arn : data.aws_lb.existing[0].arn
+  alb_target_group_arn = var.create_alb ? module.alb[0].target_group_arns[0] : data.aws_lb_target_group.existing[0].arn
 }
 # --- Attach ASG to Target Group ---
 
