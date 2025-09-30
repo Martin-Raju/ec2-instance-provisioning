@@ -129,9 +129,9 @@ module "alb" {
 # --------------------------
 
 resource "aws_launch_template" "web_lt" {
-  name_prefix = "webserver-lt-"
-  image_id    = aws_ami_from_instance.web_ami.id
-  #  instance_type          = var.instance_type_p1
+  name_prefix            = "webserver-lt-"
+  image_id               = aws_ami_from_instance.web_ami.id
+  instance_type          = var.instance_type_p1
   key_name               = var.key_name
   vpc_security_group_ids = [module.security_group.security_group_id]
 
