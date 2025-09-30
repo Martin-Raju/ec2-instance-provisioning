@@ -2,7 +2,10 @@ provider "aws" {
   region = var.aws_region
 }
 
+# --------------------------
 # Default VPC & Subnets
+# --------------------------
+
 data "aws_vpc" "default" {
   default = true
 }
@@ -13,7 +16,9 @@ data "aws_subnets" "default" {
     values = [data.aws_vpc.default.id]
   }
 }
-
+# --------------------------
+# Optional Existing ALB
+# --------------------------
 data "aws_lb" "existing" {
   count = var.create_alb ? 0 : 1
   name  = var.existing_alb_name
@@ -23,8 +28,17 @@ data "aws_lb_target_group" "existing" {
   count = var.create_alb ? 0 : 1
   name  = var.existing_tg_name
 }
+# --------------------------
+# Check if ASG exists
+# --------------------------
 
+data "aws_autoscaling_group" "existing" {
+  count = var.existing_asg_name != "" ? 1 : 0
+  name  = var.existing_asg_name
+}
+# --------------------------
 # Security Group
+# --------------------------
 module "security_group" {
   source      = "./modules/terraform-aws-security-group-5.3.0"
   name        = "allow_web"
@@ -58,7 +72,9 @@ module "security_group" {
   ]
 }
 
+# --------------------------
 # Capture AMI from running instance
+# --------------------------
 resource "aws_ami_from_instance" "web_ami" {
   name = "webserver-ami-${formatdate("YYYYMMDDHHMMss", timestamp())}"
 
@@ -70,7 +86,9 @@ resource "aws_ami_from_instance" "web_ami" {
     Environment = var.environment
   }
 }
-
+# --------------------------
+# Optional ALB
+# --------------------------
 module "alb" {
   source             = "terraform-aws-modules/alb/aws"
   version            = "7.0.0"
@@ -106,23 +124,16 @@ module "alb" {
   ]
 }
 
-# --- Auto Scaling Group with Launch Template and Mixed Instances ---
-module "asg" {
-  source                     = "./modules/terraform-aws-autoscaling-8.3.1"
-  name                       = "Test-server"
-  vpc_zone_identifier        = data.aws_subnets.default.ids
-  min_size                   = var.asg_min_size
-  max_size                   = var.asg_max_size
-  desired_capacity           = var.asg_desired_capacity
-  health_check_type          = "EC2"
-  health_check_grace_period  = 300
-  create_launch_template     = true
-  force_delete               = true
-  launch_template_name       = "spot-lt"
-  image_id                   = aws_ami_from_instance.web_ami.id
-  key_name                   = var.key_name
-  security_groups            = [module.security_group.security_group_id]
-  use_mixed_instances_policy = true
+# --------------------------
+# Create New Launch Template
+# --------------------------
+
+resource "aws_launch_template" "web_lt" {
+  name_prefix   = "webserver-lt-"
+  image_id      = aws_ami_from_instance.web_ami.id
+  instance_type = var.instance_type_p1
+  key_name      = var.key_name
+  vpc_security_group_ids = [module.security_group.security_group_id]
 
   user_data = base64encode(<<-EOT
     #!/bin/bash
@@ -130,6 +141,44 @@ module "asg" {
     stress --cpu 3 --timeout 600 &
   EOT
   )
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+# --------------------------
+# Create ASG if it doesn't exist
+# --------------------------
+
+module "asg" {
+  source                     = "./modules/terraform-aws-autoscaling-8.3.1"
+  count                      = length(data.aws_autoscaling_group.existing) == 0 ? 1 : 0
+  name                       = var.existing_asg_name != "" ? var.existing_asg_name : "Test-server"
+ #name                       = "Test-server"
+  vpc_zone_identifier        = data.aws_subnets.default.ids
+  min_size                   = var.asg_min_size
+  max_size                   = var.asg_max_size
+  desired_capacity           = var.asg_desired_capacity
+  health_check_type          = "EC2"
+  health_check_grace_period  = 300
+ #create_launch_template     = true
+  use_launch_template        = true
+  launch_template_id         = aws_launch_template.web_lt.id
+  launch_template_version    = "$Latest"
+  force_delete               = true
+ #launch_template_name       = "spot-lt"
+ #image_id                   = aws_ami_from_instance.web_ami.id
+  key_name                   = var.key_name
+  security_groups            = [module.security_group.security_group_id]
+  use_mixed_instances_policy = true
+
+#  user_data = base64encode(<<-EOT
+#    #!/bin/bash
+#    yum install -y stress
+#    stress --cpu 3 --timeout 600 &
+#  EOT
+#  )
 
   mixed_instances_policy = {
     instances_distribution = {
@@ -167,16 +216,45 @@ module "asg" {
     Environment = var.environment
   }
 }
+
+# --------------------------
+# Update Existing ASG Launch Template
+# --------------------------
+resource "aws_autoscaling_group" "update_asg_lt" {
+  count = length(data.aws_autoscaling_group.existing) > 0 ? 1 : 0
+  name  = data.aws_autoscaling_group.existing[0].name
+
+  launch_template {
+    id      = aws_launch_template.web_lt.id
+    version = "$Latest"
+  }
+
+  min_size                  = data.aws_autoscaling_group.existing[0].min_size
+  max_size                  = data.aws_autoscaling_group.existing[0].max_size
+  desired_capacity          = data.aws_autoscaling_group.existing[0].desired_capacity
+  vpc_zone_identifier       = data.aws_autoscaling_group.existing[0].vpc_zone_identifier
+  health_check_type         = data.aws_autoscaling_group.existing[0].health_check_type
+  health_check_grace_period = data.aws_autoscaling_group.existing[0].health_check_grace_period
+  force_delete              = true
+}
+
+# --------------------------
+# Local Target Group ARN
+# --------------------------
+
 locals {
   alb_target_group_arn = var.create_alb ? module.alb[0].target_group_arns[0] : data.aws_lb_target_group.existing[0].arn
 }
 
-# --- Attach ASG to Target Group ---
-
+# --------------------------
+# Attach ASG to Target Group
+# --------------------------
 resource "aws_autoscaling_attachment" "asg_alb" {
-
-  autoscaling_group_name = module.asg.autoscaling_group_name
+  autoscaling_group_name = length(data.aws_autoscaling_group.existing) > 0 ?
+                           data.aws_autoscaling_group.existing[0].name :
+                           module.asg_create[0].autoscaling_group_name
   lb_target_group_arn    = local.alb_target_group_arn
+
   depends_on = [
     module.asg,
     module.alb
