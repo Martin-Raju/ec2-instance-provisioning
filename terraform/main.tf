@@ -154,7 +154,11 @@ resource "aws_launch_template" "web_lt" {
 module "asg" {
   source = "./modules/terraform-aws-autoscaling-8.3.1"
   count  = length(data.aws_autoscaling_group.existing) == 0 ? 1 : 0
-  name   = var.existing_asg_name != "" ? var.existing_asg_name : "Test-server"
+  depends_on = [
+    aws_ami_from_instance.web_ami,
+    aws_launch_template.web_lt
+  ]
+  name = var.existing_asg_name != "" ? var.existing_asg_name : "Test-server"
   #name                       = "Test-server"
   vpc_zone_identifier       = data.aws_subnets.default.ids
   min_size                  = var.asg_min_size
@@ -183,7 +187,7 @@ module "asg" {
     launch_template = {
       launch_template_specification = {
         launch_template_id = aws_launch_template.web_lt.id
-        version            = aws_launch_template.web_lt.latest_version
+        version            = "${aws_launch_template.web_lt.latest_version}"
       }
     }
     instances_distribution = {
