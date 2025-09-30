@@ -135,12 +135,12 @@ resource "aws_launch_template" "web_lt" {
   key_name               = var.key_name
   vpc_security_group_ids = [module.security_group.security_group_id]
 
-  user_data = base64encode(<<-EOT
-    #!/bin/bash
-    yum install -y stress
-    stress --cpu 3 --timeout 600 &
-  EOT
-  )
+  #user_data = base64encode(<<-EOT
+  #  #!/bin/bash
+  # yum install -y stress
+  # stress --cpu 3 --timeout 600 &
+  #EOT
+  #)
 
   lifecycle {
     create_before_destroy = true
