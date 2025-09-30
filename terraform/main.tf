@@ -183,7 +183,7 @@ module "asg" {
     launch_template = {
       launch_template_specification = {
         launch_template_id = aws_launch_template.web_lt.id
-        version            = "$Latest"
+        version            = aws_launch_template.web_lt.latest_version
       }
     }
     instances_distribution = {
