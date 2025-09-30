@@ -162,8 +162,7 @@ module "asg" {
   desired_capacity          = var.asg_desired_capacity
   health_check_type         = "EC2"
   health_check_grace_period = 300
-  #create_launch_template     = true
-  use_launch_template     = true
+  #create_launch_template     = false
   launch_template_id      = aws_launch_template.web_lt.id
   launch_template_version = "$Latest"
   force_delete            = true
