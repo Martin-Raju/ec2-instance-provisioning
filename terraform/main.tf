@@ -206,14 +206,6 @@ module "asg" {
       { instance_type = var.instance_type_p4, spot_price = var.spot_price_p4 }
     ]
   }
-  instance_refresh = {
-    strategy = "Rolling"
-    preferences = {
-      min_healthy_percentage = 50
-      instance_warmup        = 120
-    }
-    triggers = ["launch_template"]
-  }
 
   scaling_policies = [
     {
