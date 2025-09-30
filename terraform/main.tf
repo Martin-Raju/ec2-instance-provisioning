@@ -82,7 +82,7 @@ module "alb" {
   vpc_id             = data.aws_vpc.default.id
   target_groups = [
     {
-      name_prefix      = "web-tg"
+      name_prefix      = "Web-Tg"
       backend_protocol = "HTTP"
       backend_port     = 80
       target_type      = "instance"
