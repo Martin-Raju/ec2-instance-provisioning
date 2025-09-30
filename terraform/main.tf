@@ -129,10 +129,10 @@ module "alb" {
 # --------------------------
 
 resource "aws_launch_template" "web_lt" {
-  name_prefix   = "webserver-lt-"
-  image_id      = aws_ami_from_instance.web_ami.id
-  instance_type = var.instance_type_p1
-  key_name      = var.key_name
+  name_prefix            = "webserver-lt-"
+  image_id               = aws_ami_from_instance.web_ami.id
+  instance_type          = var.instance_type_p1
+  key_name               = var.key_name
   vpc_security_group_ids = [module.security_group.security_group_id]
 
   user_data = base64encode(<<-EOT
@@ -152,33 +152,33 @@ resource "aws_launch_template" "web_lt" {
 # --------------------------
 
 module "asg" {
-  source                     = "./modules/terraform-aws-autoscaling-8.3.1"
-  count                      = length(data.aws_autoscaling_group.existing) == 0 ? 1 : 0
-  name                       = var.existing_asg_name != "" ? var.existing_asg_name : "Test-server"
- #name                       = "Test-server"
-  vpc_zone_identifier        = data.aws_subnets.default.ids
-  min_size                   = var.asg_min_size
-  max_size                   = var.asg_max_size
-  desired_capacity           = var.asg_desired_capacity
-  health_check_type          = "EC2"
-  health_check_grace_period  = 300
- #create_launch_template     = true
-  use_launch_template        = true
-  launch_template_id         = aws_launch_template.web_lt.id
-  launch_template_version    = "$Latest"
-  force_delete               = true
- #launch_template_name       = "spot-lt"
- #image_id                   = aws_ami_from_instance.web_ami.id
+  source = "./modules/terraform-aws-autoscaling-8.3.1"
+  count  = length(data.aws_autoscaling_group.existing) == 0 ? 1 : 0
+  name   = var.existing_asg_name != "" ? var.existing_asg_name : "Test-server"
+  #name                       = "Test-server"
+  vpc_zone_identifier       = data.aws_subnets.default.ids
+  min_size                  = var.asg_min_size
+  max_size                  = var.asg_max_size
+  desired_capacity          = var.asg_desired_capacity
+  health_check_type         = "EC2"
+  health_check_grace_period = 300
+  #create_launch_template     = true
+  use_launch_template     = true
+  launch_template_id      = aws_launch_template.web_lt.id
+  launch_template_version = "$Latest"
+  force_delete            = true
+  #launch_template_name       = "spot-lt"
+  #image_id                   = aws_ami_from_instance.web_ami.id
   key_name                   = var.key_name
   security_groups            = [module.security_group.security_group_id]
   use_mixed_instances_policy = true
 
-#  user_data = base64encode(<<-EOT
-#    #!/bin/bash
-#    yum install -y stress
-#    stress --cpu 3 --timeout 600 &
-#  EOT
-#  )
+  #  user_data = base64encode(<<-EOT
+  #    #!/bin/bash
+  #    yum install -y stress
+  #    stress --cpu 3 --timeout 600 &
+  #  EOT
+  #  )
 
   mixed_instances_policy = {
     instances_distribution = {
@@ -250,10 +250,12 @@ locals {
 # Attach ASG to Target Group
 # --------------------------
 resource "aws_autoscaling_attachment" "asg_alb" {
-  autoscaling_group_name = length(data.aws_autoscaling_group.existing) > 0 ?
-                           data.aws_autoscaling_group.existing[0].name :
-                           module.asg_create[0].autoscaling_group_name
-  lb_target_group_arn    = local.alb_target_group_arn
+  autoscaling_group_name = (
+    length(data.aws_autoscaling_group.existing) > 0 ?
+    data.aws_autoscaling_group.existing[0].name :
+    module.asg_create[0].autoscaling_group_name
+  )
+  lb_target_group_arn = local.alb_target_group_arn
 
   depends_on = [
     module.asg,
