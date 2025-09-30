@@ -166,7 +166,7 @@ module "asg" {
   desired_capacity          = var.asg_desired_capacity
   health_check_type         = "EC2"
   health_check_grace_period = 300
-  #create_launch_template     = false
+  create_launch_template    = false
   #launch_template_id      = aws_launch_template.web_lt.id
   #launch_template_version = "$Latest"
   force_delete = true
@@ -186,8 +186,8 @@ module "asg" {
   mixed_instances_policy = {
     launch_template = {
       launch_template_specification = {
-        launch_template_id = aws_launch_template.web_lt.id
-        version            = "${aws_launch_template.web_lt.latest_version}"
+        launch_template_name = aws_launch_template.web_lt.name
+        version              = "$Latest"
       }
     }
     instances_distribution = {
