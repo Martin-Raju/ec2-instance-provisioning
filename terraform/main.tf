@@ -168,8 +168,8 @@ module "asg" {
   force_delete            = true
   #launch_template_name       = "spot-lt"
   #image_id                   = aws_ami_from_instance.web_ami.id
-  key_name                   = var.key_name
-  security_groups            = [module.security_group.security_group_id]
+  #key_name                   = var.key_name
+  #security_groups            = [module.security_group.security_group_id]
   use_mixed_instances_policy = true
 
   #  user_data = base64encode(<<-EOT
