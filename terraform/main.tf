@@ -158,7 +158,7 @@ module "asg" {
     aws_ami_from_instance.web_ami,
     aws_launch_template.web_lt
   ]
-  name = var.existing_asg_name != "" ? var.existing_asg_name : "Test-server"
+  name = coalesce(var.existing_asg_name, "webserver-asg")
   #name                       = "Test-server"
   vpc_zone_identifier       = data.aws_subnets.default.ids
   min_size                  = var.asg_min_size
@@ -253,8 +253,6 @@ resource "aws_autoscaling_group" "update_asg_lt" {
       min_healthy_percentage = 50
       instance_warmup        = 120
     }
-
-    triggers = ["launch_template"]
   }
 }
 
