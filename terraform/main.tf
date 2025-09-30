@@ -252,7 +252,7 @@ resource "aws_autoscaling_attachment" "asg_alb" {
   autoscaling_group_name = (
     length(data.aws_autoscaling_group.existing) > 0 ?
     data.aws_autoscaling_group.existing[0].name :
-    module.asg_create[0].autoscaling_group_name
+    module.asg[0].autoscaling_group_name
   )
   lb_target_group_arn = local.alb_target_group_arn
 
