@@ -102,3 +102,9 @@ variable "existing_tg_name" {
   description = "Name of existing Target Group to use if create_alb=false"
   type        = string
 }
+
+variable "existing_asg_name" {
+  description = "Name of an existing Auto Scaling Group (leave empty if creating a new ASG)"
+  type        = string
+  default     = ""
+}
