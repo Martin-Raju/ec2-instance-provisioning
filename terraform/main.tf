@@ -246,6 +246,18 @@ resource "aws_autoscaling_group" "update_asg_lt" {
   health_check_grace_period = data.aws_autoscaling_group.existing[0].health_check_grace_period
   force_delete              = true
 
+  lifecycle {
+    # Ignore attributes not managed by Terraform
+    ignore_changes = [
+      min_size,
+      max_size,
+      desired_capacity,
+      vpc_zone_identifier,
+      health_check_type,
+      health_check_grace_period
+    ]
+  }
+
   instance_refresh {
     strategy = "Rolling"
 
@@ -277,6 +289,7 @@ resource "aws_autoscaling_attachment" "asg_alb" {
 
   depends_on = [
     module.asg,
-    module.alb
+    module.alb,
+    aws_autoscaling_group.update_asg_lt
   ]
 }
