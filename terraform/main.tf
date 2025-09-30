@@ -32,10 +32,10 @@ data "aws_lb_target_group" "existing" {
 # Check if ASG exists
 # --------------------------
 
-data "aws_autoscaling_group" "existing" {
-  count = var.existing_asg_name != "" ? 1 : 0
-  name  = var.existing_asg_name
-}
+#data "aws_autoscaling_group" "existing" {
+#  count = var.existing_asg_name != "" ? 1 : 0
+#  name  = var.existing_asg_name
+#}
 # --------------------------
 # Security Group
 # --------------------------
@@ -135,13 +135,6 @@ resource "aws_launch_template" "web_lt" {
   key_name               = var.key_name
   vpc_security_group_ids = [module.security_group.security_group_id]
 
-  #user_data = base64encode(<<-EOT
-  #  #!/bin/bash
-  # yum install -y stress
-  # stress --cpu 3 --timeout 600 &
-  #EOT
-  #)
-
   lifecycle {
     create_before_destroy = true
   }
@@ -153,13 +146,9 @@ resource "aws_launch_template" "web_lt" {
 
 module "asg" {
   source = "./modules/terraform-aws-autoscaling-8.3.1"
-  count  = length(data.aws_autoscaling_group.existing) == 0 ? 1 : 0
-  depends_on = [
-    aws_ami_from_instance.web_ami,
-    aws_launch_template.web_lt
-  ]
-  name = coalesce(var.existing_asg_name, "webserver-asg")
-  #name                       = "Test-server"
+  count  = var.existing_asg_name == "" ? 1 : 0
+  name   = coalesce(var.existing_asg_name, "webserver-asg")
+  #  name                       = "Test-server"
   vpc_zone_identifier       = data.aws_subnets.default.ids
   min_size                  = var.asg_min_size
   max_size                  = var.asg_max_size
@@ -167,6 +156,7 @@ module "asg" {
   health_check_type         = "EC2"
   health_check_grace_period = 300
   create_launch_template    = false
+  update_default_version    = true
   launch_template_id        = aws_launch_template.web_lt.id
   launch_template_version   = "$Latest"
   force_delete              = true
@@ -229,9 +219,9 @@ module "asg" {
 # --------------------------
 # Update Existing ASG Launch Template
 # --------------------------
-resource "aws_autoscaling_group" "update_asg_lt" {
-  count = length(data.aws_autoscaling_group.existing) > 0 ? 1 : 0
-  name  = data.aws_autoscaling_group.existing[0].name
+resource "aws_autoscaling_group" "existing_update" {
+  count = var.existing_asg_name != "" ? 1 : 0
+  name  = var.existing_asg_name
 
   launch_template {
     id      = aws_launch_template.web_lt.id
@@ -260,7 +250,6 @@ resource "aws_autoscaling_group" "update_asg_lt" {
 
   instance_refresh {
     strategy = "Rolling"
-
     preferences {
       min_healthy_percentage = 50
       instance_warmup        = 120
@@ -290,6 +279,6 @@ resource "aws_autoscaling_attachment" "asg_alb" {
   depends_on = [
     module.asg,
     module.alb,
-    aws_autoscaling_group.update_asg_lt
+    aws_autoscaling_group.existing_update
   ]
 }
