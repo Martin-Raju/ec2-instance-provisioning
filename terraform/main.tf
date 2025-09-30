@@ -214,7 +214,6 @@ module "asg" {
     }
     triggers = ["launch_template"]
   }
-}
 
   scaling_policies = [
     {
@@ -254,7 +253,7 @@ resource "aws_autoscaling_group" "update_asg_lt" {
   health_check_type         = data.aws_autoscaling_group.existing[0].health_check_type
   health_check_grace_period = data.aws_autoscaling_group.existing[0].health_check_grace_period
   force_delete              = true
-  
+
   instance_refresh {
     strategy = "Rolling"
 
