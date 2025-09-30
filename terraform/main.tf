@@ -131,7 +131,7 @@ module "alb" {
 resource "aws_launch_template" "web_lt" {
   name_prefix            = "webserver-lt-"
   image_id               = aws_ami_from_instance.web_ami.id
-  instance_type          = var.instance_type_p1
+#  instance_type          = var.instance_type_p1
   key_name               = var.key_name
   vpc_security_group_ids = [module.security_group.security_group_id]
 
@@ -163,8 +163,8 @@ module "asg" {
   health_check_type         = "EC2"
   health_check_grace_period = 300
   #create_launch_template     = false
-  launch_template_id      = aws_launch_template.web_lt.id
-  launch_template_version = "$Latest"
+  #launch_template_id      = aws_launch_template.web_lt.id
+  #launch_template_version = "$Latest"
   force_delete            = true
   #launch_template_name       = "spot-lt"
   #image_id                   = aws_ami_from_instance.web_ami.id
@@ -180,6 +180,12 @@ module "asg" {
   #  )
 
   mixed_instances_policy = {
+    launch_template = {
+      launch_template_specification = {
+        launch_template_id = aws_launch_template.web_lt.id
+        version            = "$Latest"
+       }
+	  }
     instances_distribution = {
       base_capacity                            = 0
       on_demand_percentage_above_base_capacity = var.on_demand_percentage_above_base_capacity
