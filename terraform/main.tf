@@ -95,51 +95,49 @@ resource "aws_security_group" "allow_web" {
   vpc_id      = data.aws_vpc.default.id
 
   # Ensure Terraform ignores future changes to SG name, description, or rules
-  lifecycle {
-    ignore_changes = all
-  }
 
   tags = {
     Name = "allow_web"
   }
 }
-
-# --------------------------
+##########################################
+# Use existing SG if already exists
+##########################################
+locals {
+  sg_id = length(data.aws_security_groups.existing.ids) > 0 ? data.aws_security_groups.existing.ids[0] : aws_security_group.allow_web[0].id
+}
+##########################################
 # Ingress Rules
-# --------------------------
+##########################################
 resource "aws_security_group_rule" "allow_ssh" {
+  security_group_id = local.sg_id
   type              = "ingress"
   from_port         = 22
   to_port           = 22
   protocol          = "tcp"
   cidr_blocks       = ["0.0.0.0/0"]
-  security_group_id = aws_security_group.allow_web.id
-  description       = "SSH"
 }
 
 resource "aws_security_group_rule" "allow_http" {
+  security_group_id = local.sg_id
   type              = "ingress"
   from_port         = 80
   to_port           = 80
   protocol          = "tcp"
   cidr_blocks       = ["0.0.0.0/0"]
-  security_group_id = aws_security_group.allow_web.id
-  description       = "HTTP"
 }
 
-# --------------------------
-# Egress Rules
-# --------------------------
+##########################################
+# Egress Rule
+##########################################
 resource "aws_security_group_rule" "allow_all_egress" {
+  security_group_id = local.sg_id
   type              = "egress"
   from_port         = 0
   to_port           = 0
   protocol          = "-1"
   cidr_blocks       = ["0.0.0.0/0"]
-  security_group_id = aws_security_group.allow_web.id
-  description       = "Allow all outbound traffic"
 }
-
 
 # --------------------------
 # Capture AMI from running instance
@@ -180,7 +178,7 @@ module "alb" {
   name               = "web-alb-${substr(timestamp(), 8, 4)}"
   load_balancer_type = "application"
   #security_groups    = [module.security_group.security_group_id]
-  security_groups = [aws_security_group.allow_web.id]
+  security_groups = [local.sg_id]
   subnets         = data.aws_subnets.default.ids
   vpc_id          = data.aws_vpc.default.id
   target_groups = [
@@ -230,7 +228,7 @@ module "asg" {
   key_name                = var.key_name
   #vpc_security_group_ids  = [module.security_group.security_group_id]
   #security_groups            = [module.security_group.security_group_id]
-  security_groups            = [aws_security_group.allow_web.id]
+  security_groups            = [local.sg_id]
   use_mixed_instances_policy = true
 
   mixed_instances_policy = {
