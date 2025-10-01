@@ -41,41 +41,93 @@ data "aws_lb_target_group" "existing" {
 # Security Group
 # --------------------------
 
-module "security_group" {
-  source      = "./modules/terraform-aws-security-group-5.3.0"
+# module "security_group" {
+# source      = "./modules/terraform-aws-security-group-5.3.0"
+# name        = "allow_web"
+# description = "Allow HTTP/SSH inbound traffic"
+# vpc_id      = data.aws_vpc.default.id
+
+# ingress_with_cidr_blocks = [
+# {
+# from_port   = 22
+# to_port     = 22
+# protocol    = "tcp"
+# cidr_blocks = "0.0.0.0/0"
+# description = "SSH"
+# },
+# {
+# from_port   = 80
+# to_port     = 80
+# protocol    = "tcp"
+# cidr_blocks = "0.0.0.0/0"
+# description = "HTTP"
+# }
+# ]
+
+# egress_with_cidr_blocks = [
+# {
+# from_port   = 0
+# to_port     = 0
+# protocol    = "-1"
+# cidr_blocks = "0.0.0.0/0"
+# }
+# ]
+# }
+
+# --------------------------
+# Security Group
+# --------------------------
+resource "aws_security_group" "allow_web" {
   name        = "allow_web"
   description = "Allow HTTP/SSH inbound traffic"
   vpc_id      = data.aws_vpc.default.id
 
-  ingress_with_cidr_blocks = [
-    {
-      from_port   = 22
-      to_port     = 22
-      protocol    = "tcp"
-      cidr_blocks = "0.0.0.0/0"
-      description = "SSH"
-    },
-    {
-      from_port   = 80
-      to_port     = 80
-      protocol    = "tcp"
-      cidr_blocks = "0.0.0.0/0"
-      description = "HTTP"
-    }
-  ]
-
-  egress_with_cidr_blocks = [
-    {
-      from_port   = 0
-      to_port     = 0
-      protocol    = "-1"
-      cidr_blocks = "0.0.0.0/0"
-    }
-  ]
+  # Ensure Terraform ignores future changes to SG name, description, or rules
   lifecycle {
     ignore_changes = all
   }
+
+  tags = {
+    Name = "allow_web"
+  }
 }
+
+# --------------------------
+# Ingress Rules
+# --------------------------
+resource "aws_security_group_rule" "allow_ssh" {
+  type              = "ingress"
+  from_port         = 22
+  to_port           = 22
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.allow_web.id
+  description       = "SSH"
+}
+
+resource "aws_security_group_rule" "allow_http" {
+  type              = "ingress"
+  from_port         = 80
+  to_port           = 80
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.allow_web.id
+  description       = "HTTP"
+}
+
+# --------------------------
+# Egress Rules
+# --------------------------
+resource "aws_security_group_rule" "allow_all_egress" {
+  type              = "egress"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.allow_web.id
+  description       = "Allow all outbound traffic"
+}
+
 
 # --------------------------
 # Capture AMI from running instance
