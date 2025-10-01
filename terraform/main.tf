@@ -145,18 +145,20 @@ module "alb" {
 # Delete old ASGs
 # --------------------------
 
-resource "null_resource" "delete_old_asgs" {
-  count = length(data.aws_autoscaling_groups.existing.names)
+resource "aws_autoscaling_group" "old_asg_delete" {
+  for_each = { for n in data.aws_autoscaling_groups.existing.names : n => n }
 
-  provisioner "local-exec" {
-    command = <<EOT
-aws autoscaling delete-auto-scaling-group \
-  --auto-scaling-group-name ${data.aws_autoscaling_groups.existing.names[count.index]} \
-  --force-delete
-EOT
+  name             = each.value
+  min_size         = 0
+  max_size         = 0
+  desired_capacity = 0
+  force_delete     = true
+
+  # Use a dummy launch template to satisfy Terraform requirement
+  launch_template {
+    id      = aws_launch_template.web_lt.id
+    version = "$Latest"
   }
-
-  depends_on = [data.aws_autoscaling_groups.existing]
 }
 
 # --------------------------
@@ -220,7 +222,7 @@ module "asg" {
     Name        = "Asg-instance"
     Environment = var.environment
   }
-  depends_on = [null_resource.delete_old_asgs]
+  depends_on = [aws_autoscaling_group.old_asg_delete]
 }
 
 # --------------------------
