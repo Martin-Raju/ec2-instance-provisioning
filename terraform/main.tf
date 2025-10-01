@@ -133,7 +133,6 @@ module "asg" {
   health_check_grace_period  = 300
   create_launch_template     = true
   force_delete               = false
-  name_prefix                = null
   launch_template_name       = "web-lt"
   image_id                   = aws_ami_from_instance.web_ami.id
   key_name                   = var.key_name
