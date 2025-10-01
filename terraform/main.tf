@@ -34,7 +34,7 @@ data "aws_lb_target_group" "existing" {
 data "aws_autoscaling_groups" "existing" {
   filter {
     name   = "tag:Name"
-    values = ["Test-ASG*"]
+    values = ["Test-ASG-*"]
   }
 }
 # --------------------------
