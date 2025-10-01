@@ -133,18 +133,11 @@ module "asg" {
   health_check_grace_period  = 300
   create_launch_template     = true
   force_delete               = true
-  launch_template_name       = "spot-lt"
+  launch_template_name       = "web-lt-${substr(timestamp(), 8, 4)}"
   image_id                   = aws_ami_from_instance.web_ami.id
   key_name                   = var.key_name
   security_groups            = [module.security_group.security_group_id]
   use_mixed_instances_policy = true
-
-  user_data = base64encode(<<-EOT
-    #!/bin/bash
-    yum install -y stress
-    stress --cpu 3 --timeout 600 &
-  EOT
-  )
 
   mixed_instances_policy = {
     instances_distribution = {
@@ -177,6 +170,19 @@ module "asg" {
       }
     }
   ]
+
+# ----------------------------------------------------
+# Instance Refresh Block for Rolling Updates
+# ----------------------------------------------------
+instance_refresh = {
+   strategy = "Rolling"
+   preferences = {
+     min_healthy_percentage = 90 
+     instance_warmup        = 100 
+   }
+   triggers = ["launch_template"] 
+ }
+
   tags = {
     Name        = "Asg-instance"
     Environment = var.environment
