@@ -103,8 +103,3 @@ variable "existing_tg_name" {
   type        = string
 }
 
-variable "existing_asg_name" {
-  description = "Name of an existing Auto Scaling Group (leave empty if creating a new ASG)"
-  type        = string
-  default     = ""
-}

@@ -9,6 +9,9 @@ provider "aws" {
 data "aws_vpc" "default" {
   default = true
 }
+# --------------------------
+# Data block
+# --------------------------
 
 data "aws_subnets" "default" {
   filter {
@@ -16,9 +19,7 @@ data "aws_subnets" "default" {
     values = [data.aws_vpc.default.id]
   }
 }
-# --------------------------
-# Optional Existing ALB
-# --------------------------
+
 data "aws_lb" "existing" {
   count = var.create_alb ? 0 : 1
   name  = var.existing_alb_name
@@ -28,17 +29,11 @@ data "aws_lb_target_group" "existing" {
   count = var.create_alb ? 0 : 1
   name  = var.existing_tg_name
 }
-# --------------------------
-# Check if ASG exists
-# --------------------------
 
-data "aws_autoscaling_group" "existing" {
-  count = var.existing_asg_name != "" ? 1 : 0
-  name  = var.existing_asg_name
-}
 # --------------------------
 # Security Group
 # --------------------------
+
 module "security_group" {
   source      = "./modules/terraform-aws-security-group-5.3.0"
   name        = "allow_web"
@@ -125,71 +120,33 @@ module "alb" {
 }
 
 # --------------------------
-# Create New Launch Template
+# Create ASG 
 # --------------------------
-
-resource "aws_launch_template" "web_lt" {
-  name_prefix            = "webserver-lt-"
-  image_id               = aws_ami_from_instance.web_ami.id
-  instance_type          = var.instance_type_p1
-  key_name               = var.key_name
-  vpc_security_group_ids = [module.security_group.security_group_id]
-
-  #user_data = base64encode(<<-EOT
-  #  #!/bin/bash
-  # yum install -y stress
-  # stress --cpu 3 --timeout 600 &
-  #EOT
-  #)
-
-  lifecycle {
-    create_before_destroy = true
-  }
-}
-
-# --------------------------
-# Create ASG if it doesn't exist
-# --------------------------
-
 module "asg" {
-  source = "./modules/terraform-aws-autoscaling-8.3.1"
-  count  = length(data.aws_autoscaling_group.existing) == 0 ? 1 : 0
-  depends_on = [
-    aws_ami_from_instance.web_ami,
-    aws_launch_template.web_lt
-  ]
-  name = coalesce(var.existing_asg_name, "webserver-asg")
-  #name                       = "Test-server"
-  vpc_zone_identifier       = data.aws_subnets.default.ids
-  min_size                  = var.asg_min_size
-  max_size                  = var.asg_max_size
-  desired_capacity          = var.asg_desired_capacity
-  health_check_type         = "EC2"
-  health_check_grace_period = 300
-  create_launch_template    = false
-  launch_template_id        = aws_launch_template.web_lt.id
-  launch_template_version   = "$Latest"
-  force_delete              = true
-  #launch_template_name       = "spot-lt"
-  #image_id                   = aws_ami_from_instance.web_ami.id
-  #key_name                   = var.key_name
-  #security_groups            = [module.security_group.security_group_id]
-  use_mixed_instances_policy = false
+  source                     = "./modules/terraform-aws-autoscaling-8.3.1"
+  name                       = "Test-server"
+  vpc_zone_identifier        = data.aws_subnets.default.ids
+  min_size                   = var.asg_min_size
+  max_size                   = var.asg_max_size
+  desired_capacity           = var.asg_desired_capacity
+  health_check_type          = "EC2"
+  health_check_grace_period  = 300
+  create_launch_template     = true
+  force_delete               = true
+  launch_template_name       = "spot-lt"
+  image_id                   = aws_ami_from_instance.web_ami.id
+  key_name                   = var.key_name
+  security_groups            = [module.security_group.security_group_id]
+  use_mixed_instances_policy = true
 
-  #  user_data = base64encode(<<-EOT
-  #    #!/bin/bash
-  #    yum install -y stress
-  #    stress --cpu 3 --timeout 600 &
-  #  EOT
-  #  )
+  user_data = base64encode(<<-EOT
+    #!/bin/bash
+    yum install -y stress
+    stress --cpu 3 --timeout 600 &
+  EOT
+  )
 
   mixed_instances_policy = {
-    launch_template = {
-      launch_template_specification = {
-        launch_template_name = aws_launch_template.web_lt.name
-        version              = "$Latest"
-      }
-    }
     instances_distribution = {
       base_capacity                            = 0
       on_demand_percentage_above_base_capacity = var.on_demand_percentage_above_base_capacity
@@ -227,48 +184,6 @@ module "asg" {
 }
 
 # --------------------------
-# Update Existing ASG Launch Template
-# --------------------------
-resource "aws_autoscaling_group" "update_asg_lt" {
-  count = length(data.aws_autoscaling_group.existing) > 0 ? 1 : 0
-  name  = data.aws_autoscaling_group.existing[0].name
-
-  launch_template {
-    id      = aws_launch_template.web_lt.id
-    version = "$Latest"
-  }
-
-  min_size                  = data.aws_autoscaling_group.existing[0].min_size
-  max_size                  = data.aws_autoscaling_group.existing[0].max_size
-  desired_capacity          = data.aws_autoscaling_group.existing[0].desired_capacity
-  vpc_zone_identifier       = data.aws_autoscaling_group.existing[0].vpc_zone_identifier
-  health_check_type         = data.aws_autoscaling_group.existing[0].health_check_type
-  health_check_grace_period = data.aws_autoscaling_group.existing[0].health_check_grace_period
-  force_delete              = true
-
-  lifecycle {
-    # Ignore attributes not managed by Terraform
-    ignore_changes = [
-      min_size,
-      max_size,
-      desired_capacity,
-      vpc_zone_identifier,
-      health_check_type,
-      health_check_grace_period
-    ]
-  }
-
-  instance_refresh {
-    strategy = "Rolling"
-
-    preferences {
-      min_healthy_percentage = 50
-      instance_warmup        = 120
-    }
-  }
-}
-
-# --------------------------
 # Local Target Group ARN
 # --------------------------
 
@@ -279,17 +194,13 @@ locals {
 # --------------------------
 # Attach ASG to Target Group
 # --------------------------
-resource "aws_autoscaling_attachment" "asg_alb" {
-  autoscaling_group_name = (
-    length(data.aws_autoscaling_group.existing) > 0 ?
-    data.aws_autoscaling_group.existing[0].name :
-    module.asg[0].autoscaling_group_name
-  )
-  lb_target_group_arn = local.alb_target_group_arn
 
+resource "aws_autoscaling_attachment" "asg_alb" {
+
+  autoscaling_group_name = module.asg.autoscaling_group_name
+  lb_target_group_arn    = local.alb_target_group_arn
   depends_on = [
     module.asg,
-    module.alb,
-    aws_autoscaling_group.update_asg_lt
+    module.alb
   ]
 }
