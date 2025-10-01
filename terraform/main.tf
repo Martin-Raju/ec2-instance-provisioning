@@ -235,7 +235,4 @@ resource "aws_autoscaling_group" "old_asg" {
   desired_capacity = 0
   force_delete     = true
 
-  lifecycle {
-    prevent_destroy = false
-  }
 }

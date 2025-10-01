@@ -103,3 +103,7 @@ variable "existing_tg_name" {
   type        = string
 }
 
+variable "cleanup_old_asg" {
+  type    = bool
+  default = true
+}
