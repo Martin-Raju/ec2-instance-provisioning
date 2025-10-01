@@ -124,7 +124,8 @@ module "alb" {
 # --------------------------
 module "asg" {
   source                     = "./modules/terraform-aws-autoscaling-8.3.1"
-  autoscaling_group_name     = "Test-server"
+  name                       = "Test-ASG"
+  use_name_prefix            = false
   vpc_zone_identifier        = data.aws_subnets.default.ids
   min_size                   = var.asg_min_size
   max_size                   = var.asg_max_size
@@ -134,6 +135,7 @@ module "asg" {
   create_launch_template     = true
   force_delete               = false
   launch_template_name       = "web-lt"
+  launch_template_version    = "$Latest"
   image_id                   = aws_ami_from_instance.web_ami.id
   key_name                   = var.key_name
   security_groups            = [module.security_group.security_group_id]
