@@ -95,7 +95,7 @@ resource "aws_ami_from_instance" "web_ami" {
 resource "aws_launch_template" "web_lt" {
   name_prefix            = "web-lt-"
   image_id               = aws_ami_from_instance.web_ami.id
-  instance_type          = var.instance_type_p1
+  instance_type          = var.instance_type_p2
   key_name               = var.key_name
   vpc_security_group_ids = [module.security_group.security_group_id]
   lifecycle {
