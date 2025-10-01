@@ -167,9 +167,10 @@ module "alb" {
   count              = var.create_alb ? 1 : 0
   name               = "web-alb-${substr(timestamp(), 8, 4)}"
   load_balancer_type = "application"
-  security_groups    = [module.security_group.security_group_id]
-  subnets            = data.aws_subnets.default.ids
-  vpc_id             = data.aws_vpc.default.id
+  #security_groups    = [module.security_group.security_group_id]
+  security_groups = [aws_security_group.allow_web.id]
+  subnets         = data.aws_subnets.default.ids
+  vpc_id          = data.aws_vpc.default.id
   target_groups = [
     {
       name_prefix      = "Web-Tg"
@@ -216,7 +217,8 @@ module "asg" {
   image_id                = aws_ami_from_instance.web_ami.id
   key_name                = var.key_name
   #vpc_security_group_ids  = [module.security_group.security_group_id]
-  security_groups            = [module.security_group.security_group_id]
+  #security_groups            = [module.security_group.security_group_id]
+  security_groups            = [aws_security_group.allow_web.id]
   use_mixed_instances_policy = true
 
   mixed_instances_policy = {
