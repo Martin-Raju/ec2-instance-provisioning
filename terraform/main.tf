@@ -155,10 +155,10 @@ resource "null_resource" "delete_old_asgs" {
         --force-delete
     EOT
   }
-  
+
   triggers = {
     asg_count = length(data.aws_autoscaling_groups.existing.names)
-  }  
+  }
 
   depends_on = [data.aws_autoscaling_groups.existing]
 }
