@@ -124,7 +124,7 @@ module "alb" {
 # --------------------------
 module "asg" {
   source                     = "./modules/terraform-aws-autoscaling-8.3.1"
-  name                       = "Test-server"
+  autoscaling_group_name     = "Test-server"
   vpc_zone_identifier        = data.aws_subnets.default.ids
   min_size                   = var.asg_min_size
   max_size                   = var.asg_max_size
