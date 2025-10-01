@@ -228,8 +228,14 @@ resource "aws_autoscaling_attachment" "asg_alb" {
 # Destroy old ASG after new ASG is ready
 # --------------------------
 resource "aws_autoscaling_group" "old_asg" {
-  # import your old ASG first if needed
-  name = "Test-ASG"
-  # Optional: force delete old instances
-  force_delete = true
+  count            = var.cleanup_old_asg ? 1 : 0
+  name             = "Test-ASG"
+  min_size         = 0
+  max_size         = 0
+  desired_capacity = 0
+  force_delete     = true
+
+  lifecycle {
+    prevent_destroy = false
+  }
 }
