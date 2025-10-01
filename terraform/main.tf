@@ -145,15 +145,18 @@ module "alb" {
 # Delete old ASGs
 # --------------------------
 
-resource "aws_autoscaling_group" "old_asg_delete" {
+resource "null_resource" "delete_old_asgs" {
   count = length(data.aws_autoscaling_groups.existing.names)
 
-  name = data.aws_autoscaling_groups.existing.names[count.index]
+  provisioner "local-exec" {
+    command = <<EOT
+      aws autoscaling delete-auto-scaling-group \
+        --auto-scaling-group-name ${data.aws_autoscaling_groups.existing.names[count.index]} \
+        --force-delete
+    EOT
+  }
 
-  min_size         = 0
-  max_size         = 0
-  desired_capacity = 0
-  force_delete     = true
+  depends_on = [data.aws_autoscaling_groups.existing]
 }
 
 # --------------------------
