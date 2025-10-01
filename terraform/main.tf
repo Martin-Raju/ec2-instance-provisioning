@@ -160,8 +160,8 @@ module "asg" {
   launch_template_version = "$Latest"
   image_id                = aws_ami_from_instance.web_ami.id
   key_name                = var.key_name
-  vpc_security_group_ids  = [module.security_group.security_group_id]
-  #security_groups          = [module.security_group.security_group_id]
+  #vpc_security_group_ids  = [module.security_group.security_group_id]
+  security_groups            = [module.security_group.security_group_id]
   use_mixed_instances_policy = true
 
   mixed_instances_policy = {
