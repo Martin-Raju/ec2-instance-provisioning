@@ -86,12 +86,12 @@ resource "aws_ami_from_instance" "web_ami" {
 # Create Launch Template
 # --------------------------
 resource "aws_launch_template" "web_lt" {
-  name_prefix          = "web-lt-"
-  image_id             = aws_ami_from_instance.web_ami.id
-  instance_type        = var.instance_type_p1
-  key_name             = var.key_name
-  security_group_names = [module.security_group.security_group_id]
-
+  name_prefix   = "web-lt-"
+  image_id      = aws_ami_from_instance.web_ami.id
+  instance_type = var.instance_type_p1
+  key_name      = var.key_name
+  #security_group_names = [module.security_group.security_group_id]
+  vpc_security_group_ids = [module.security_group.security_group_id]
   lifecycle {
     create_before_destroy = true
   }
@@ -150,7 +150,7 @@ module "asg" {
   health_check_grace_period = 300
   create_launch_template    = false
   # force_delete               = false
-  launch_template_id    = aws_launch_template.web_lt.id
+  launch_template_id      = aws_launch_template.web_lt.id
   launch_template_version = "$Latest"
   #  image_id                   = aws_ami_from_instance.web_ami.id
   #  key_name                   = var.key_name
