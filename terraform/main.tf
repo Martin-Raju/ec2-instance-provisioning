@@ -180,7 +180,7 @@ instance_refresh = {
      min_healthy_percentage = 90 
      instance_warmup        = 100 
    }
-   triggers = ["launch_template"] 
+   triggers = [] 
  }
 
   tags = {
