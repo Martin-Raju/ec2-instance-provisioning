@@ -142,26 +142,6 @@ module "alb" {
 }
 
 # --------------------------
-# Delete old ASGs
-# --------------------------
-
-resource "aws_autoscaling_group" "old_asg_delete" {
-  for_each = { for n in data.aws_autoscaling_groups.existing.names : n => n }
-
-  name             = each.value
-  min_size         = 0
-  max_size         = 0
-  desired_capacity = 0
-  force_delete     = true
-
-  # Use a dummy launch template to satisfy Terraform requirement
-  launch_template {
-    id      = aws_launch_template.web_lt.id
-    version = "$Latest"
-  }
-}
-
-# --------------------------
 # Create ASG 
 # --------------------------
 module "asg" {
@@ -222,9 +202,33 @@ module "asg" {
     Name        = "Asg-instance"
     Environment = var.environment
   }
-  depends_on = [aws_autoscaling_group.old_asg_delete]
 }
+# --------------------------
+# Cleanup Old ASGs
+# --------------------------
 
+resource "null_resource" "delete_old_asgs" {
+  triggers = {
+    always_run = timestamp()
+  }
+
+  provisioner "local-exec" {
+    command = <<EOT
+      for asg in $(aws autoscaling describe-auto-scaling-groups \
+        --query "AutoScalingGroups[?starts_with(AutoScalingGroupName, 'Test-ASG-')].AutoScalingGroupName" \
+        --output text); do
+          if [ "$asg" != "${module.asg.autoscaling_group_name}" ]; then
+            echo "Deleting old ASG: $asg"
+            aws autoscaling delete-auto-scaling-group \
+              --auto-scaling-group-name $asg \
+              --force-delete
+          fi
+      done
+    EOT
+  }
+
+  depends_on = [module.asg]
+}
 # --------------------------
 # Local Target Group ARN
 # --------------------------
