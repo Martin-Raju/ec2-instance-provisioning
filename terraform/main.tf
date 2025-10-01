@@ -31,6 +31,17 @@ data "aws_lb_target_group" "existing" {
   name  = var.existing_tg_name
 }
 
+data "aws_security_groups" "existing" {
+  filter {
+    name   = "group-name"
+    values = ["allow_web"]
+  }
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.default.id]
+  }
+}
+
 #data "aws_autoscaling_groups" "existing" {
 #  filter {
 #    name   = "tag:Name"
@@ -79,6 +90,7 @@ data "aws_lb_target_group" "existing" {
 # --------------------------
 resource "aws_security_group" "allow_web" {
   name        = "allow_web"
+  count       = length(data.aws_security_groups.existing.*.id) == 0 ? 1 : 0
   description = "Allow HTTP/SSH inbound traffic"
   vpc_id      = data.aws_vpc.default.id
 
