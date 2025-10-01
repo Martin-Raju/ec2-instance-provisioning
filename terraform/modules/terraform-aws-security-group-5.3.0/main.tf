@@ -17,7 +17,11 @@ resource "aws_security_group" "this" {
   description            = var.description
   vpc_id                 = var.vpc_id
   revoke_rules_on_delete = var.revoke_rules_on_delete
-
+  ##########################################
+  lifecycle {
+    ignore_changes = all   
+  }
+  ######################################
   tags = merge(
     {
       "Name" = format("%s", var.name)
