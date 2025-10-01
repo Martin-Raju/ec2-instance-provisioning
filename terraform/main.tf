@@ -139,9 +139,9 @@ module "alb" {
 # Create ASG 
 # --------------------------
 module "asg" {
-  source                    = "./modules/terraform-aws-autoscaling-8.3.1"
-  name                      = "Test-ASG"
-  use_name_prefix           = false
+  source = "./modules/terraform-aws-autoscaling-8.3.1"
+  name   = "Test-ASG-${substr(timestamp(), 0, 8)}"
+  #  use_name_prefix           = false
   vpc_zone_identifier       = data.aws_subnets.default.ids
   min_size                  = var.asg_min_size
   max_size                  = var.asg_max_size
@@ -189,9 +189,9 @@ module "asg" {
     }
   ]
 
-  # ----------------------------------------------------
-  # Instance Refresh Block for Rolling Updates
-  # ----------------------------------------------------
+  lifecycle {
+    create_before_destroy = true
+  }
   instance_refresh = {
     strategy = "Rolling"
     preferences = {
@@ -227,4 +227,13 @@ resource "aws_autoscaling_attachment" "asg_alb" {
     module.asg,
     module.alb
   ]
+}
+# --------------------------
+# Destroy old ASG after new ASG is ready
+# --------------------------
+resource "aws_autoscaling_group" "old_asg" {
+  # import your old ASG first if needed
+  name = "Test-ASG"
+  # Optional: force delete old instances
+  force_delete = true
 }
