@@ -19,7 +19,7 @@ resource "aws_security_group" "this" {
   revoke_rules_on_delete = var.revoke_rules_on_delete
   ##########################################
   lifecycle {
-    ignore_changes = all   
+    ignore_changes = all
   }
   ######################################
   tags = merge(
