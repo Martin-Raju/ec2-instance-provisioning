@@ -188,10 +188,6 @@ module "asg" {
       }
     }
   ]
-
-  lifecycle {
-    create_before_destroy = true
-  }
   instance_refresh = {
     strategy = "Rolling"
     preferences = {
