@@ -31,12 +31,12 @@ data "aws_lb_target_group" "existing" {
   name  = var.existing_tg_name
 }
 
-data "aws_autoscaling_groups" "existing" {
-  filter {
-    name   = "tag:Name"
-    values = ["Test-ASG-*"]
-  }
-}
+#data "aws_autoscaling_groups" "existing" {
+#  filter {
+#    name   = "tag:Name"
+#    values = ["Test-ASG-*"]
+#  }
+#}
 # --------------------------
 # Security Group
 # --------------------------
@@ -92,16 +92,16 @@ resource "aws_ami_from_instance" "web_ami" {
 # --------------------------
 # Create Launch Template
 # --------------------------
-resource "aws_launch_template" "web_lt" {
-  name_prefix            = "web-lt-"
-  image_id               = aws_ami_from_instance.web_ami.id
-  instance_type          = var.instance_type_p2
-  key_name               = var.key_name
-  vpc_security_group_ids = [module.security_group.security_group_id]
-  lifecycle {
-    create_before_destroy = true
-  }
-}
+#resource "aws_launch_template" "web_lt" {
+#  name_prefix            = "web-lt-"
+#  image_id               = aws_ami_from_instance.web_ami.id
+#  instance_type          = var.instance_type_p2
+#  key_name               = var.key_name
+#  vpc_security_group_ids = [module.security_group.security_group_id]
+#  lifecycle {
+#    create_before_destroy = true
+#  }
+#}
 
 # --------------------------
 # Optional ALB
@@ -145,17 +145,23 @@ module "alb" {
 # Create ASG 
 # --------------------------
 module "asg" {
-  source                     = "./modules/terraform-aws-autoscaling-8.3.1"
-  name                       = "Test-ASG-${substr(timestamp(), 0, 8)}"
-  vpc_zone_identifier        = data.aws_subnets.default.ids
-  min_size                   = var.asg_min_size
-  max_size                   = var.asg_max_size
-  desired_capacity           = var.asg_desired_capacity
-  health_check_type          = "EC2"
-  health_check_grace_period  = 300
-  create_launch_template     = false
-  launch_template_id         = aws_launch_template.web_lt.id
-  launch_template_version    = "$Latest"
+  source                    = "./modules/terraform-aws-autoscaling-8.3.1"
+  name                      = "Test-ASG"
+  use_name_prefix           = false
+  vpc_zone_identifier       = data.aws_subnets.default.ids
+  min_size                  = var.asg_min_size
+  max_size                  = var.asg_max_size
+  desired_capacity          = var.asg_desired_capacity
+  health_check_type         = "EC2"
+  health_check_grace_period = 300
+  create_launch_template    = true
+  # force_delete               = false
+  #launch_template_id       = aws_launch_template.web_lt.id
+  launch_template_version = "$Latest"
+  image_id                = aws_ami_from_instance.web_ami.id
+  key_name                = var.key_name
+  vpc_security_group_ids  = [module.security_group.security_group_id]
+  #security_groups          = [module.security_group.security_group_id]
   use_mixed_instances_policy = true
 
   mixed_instances_policy = {
@@ -169,7 +175,7 @@ module "asg" {
     }
 
     override = [
-      #{ instance_type = var.instance_type_p1, spot_price = var.spot_price_p1 },
+      { instance_type = var.instance_type_p1, spot_price = var.spot_price_p1 },
       { instance_type = var.instance_type_p2, spot_price = var.spot_price_p2 },
       { instance_type = var.instance_type_p3, spot_price = var.spot_price_p3 },
       { instance_type = var.instance_type_p4, spot_price = var.spot_price_p4 }
@@ -189,6 +195,10 @@ module "asg" {
       }
     }
   ]
+
+  # ----------------------------------------------------
+  # Instance Refresh Block for Rolling Updates
+  # ----------------------------------------------------
   instance_refresh = {
     strategy = "Rolling"
     preferences = {
@@ -203,32 +213,7 @@ module "asg" {
     Environment = var.environment
   }
 }
-# --------------------------
-# Cleanup Old ASGs
-# --------------------------
 
-resource "null_resource" "delete_old_asgs" {
-  triggers = {
-    always_run = timestamp()
-  }
-
-  provisioner "local-exec" {
-    command = <<EOT
-      for asg in $(aws autoscaling describe-auto-scaling-groups \
-        --query "AutoScalingGroups[?starts_with(AutoScalingGroupName, 'Test-ASG-')].AutoScalingGroupName" \
-        --output text); do
-          if [ "$asg" != "${module.asg.autoscaling_group_name}" ]; then
-            echo "Deleting old ASG: $asg"
-            aws autoscaling delete-auto-scaling-group \
-              --auto-scaling-group-name $asg \
-              --force-delete
-          fi
-      done
-    EOT
-  }
-
-  depends_on = [module.asg]
-}
 # --------------------------
 # Local Target Group ARN
 # --------------------------
