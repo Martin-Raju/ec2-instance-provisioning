@@ -132,8 +132,9 @@ module "asg" {
   health_check_type          = "EC2"
   health_check_grace_period  = 300
   create_launch_template     = true
-  force_delete               = true
-  launch_template_name       = "web-lt-${substr(timestamp(), 8, 4)}"
+  force_delete               = false
+  name_prefix                = null
+  launch_template_name       = "web-lt"
   image_id                   = aws_ami_from_instance.web_ami.id
   key_name                   = var.key_name
   security_groups            = [module.security_group.security_group_id]
