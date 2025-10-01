@@ -150,7 +150,7 @@ module "asg" {
   health_check_grace_period = 300
   create_launch_template    = false
   # force_delete               = false
-  launch_template_name    = aws_launch_template.web_lt.id
+  launch_template_id    = aws_launch_template.web_lt.id
   launch_template_version = "$Latest"
   #  image_id                   = aws_ami_from_instance.web_ami.id
   #  key_name                   = var.key_name
