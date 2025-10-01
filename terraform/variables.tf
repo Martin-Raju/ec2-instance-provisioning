@@ -102,8 +102,3 @@ variable "existing_tg_name" {
   description = "Name of existing Target Group to use if create_alb=false"
   type        = string
 }
-
-variable "cleanup_old_asg" {
-  type    = bool
-  default = true
-}

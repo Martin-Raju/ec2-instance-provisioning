@@ -9,6 +9,7 @@ provider "aws" {
 data "aws_vpc" "default" {
   default = true
 }
+
 # --------------------------
 # Data block
 # --------------------------
@@ -30,6 +31,12 @@ data "aws_lb_target_group" "existing" {
   name  = var.existing_tg_name
 }
 
+data "aws_autoscaling_groups" "existing" {
+  filter {
+    name   = "tag:Name"
+    values = ["Test-ASG*"]
+  }
+}
 # --------------------------
 # Security Group
 # --------------------------
@@ -86,11 +93,10 @@ resource "aws_ami_from_instance" "web_ami" {
 # Create Launch Template
 # --------------------------
 resource "aws_launch_template" "web_lt" {
-  name_prefix   = "web-lt-"
-  image_id      = aws_ami_from_instance.web_ami.id
-  instance_type = var.instance_type_p1
-  key_name      = var.key_name
-  #security_group_names = [module.security_group.security_group_id]
+  name_prefix            = "web-lt-"
+  image_id               = aws_ami_from_instance.web_ami.id
+  instance_type          = var.instance_type_p1
+  key_name               = var.key_name
   vpc_security_group_ids = [module.security_group.security_group_id]
   lifecycle {
     create_before_destroy = true
@@ -136,25 +142,35 @@ module "alb" {
 }
 
 # --------------------------
+# Delete old ASGs
+# --------------------------
+
+resource "aws_autoscaling_group" "old_asg_delete" {
+  count = length(data.aws_autoscaling_groups.existing.names)
+
+  name = data.aws_autoscaling_groups.existing.names[count.index]
+
+  min_size         = 0
+  max_size         = 0
+  desired_capacity = 0
+  force_delete     = true
+}
+
+# --------------------------
 # Create ASG 
 # --------------------------
 module "asg" {
-  source = "./modules/terraform-aws-autoscaling-8.3.1"
-  name   = "Test-ASG-${substr(timestamp(), 0, 8)}"
-  #  use_name_prefix           = false
-  vpc_zone_identifier       = data.aws_subnets.default.ids
-  min_size                  = var.asg_min_size
-  max_size                  = var.asg_max_size
-  desired_capacity          = var.asg_desired_capacity
-  health_check_type         = "EC2"
-  health_check_grace_period = 300
-  create_launch_template    = false
-  # force_delete               = false
-  launch_template_id      = aws_launch_template.web_lt.id
-  launch_template_version = "$Latest"
-  #  image_id                   = aws_ami_from_instance.web_ami.id
-  #  key_name                   = var.key_name
-  #  security_groups            = [module.security_group.security_group_id]
+  source                     = "./modules/terraform-aws-autoscaling-8.3.1"
+  name                       = "Test-ASG-${substr(timestamp(), 0, 8)}"
+  vpc_zone_identifier        = data.aws_subnets.default.ids
+  min_size                   = var.asg_min_size
+  max_size                   = var.asg_max_size
+  desired_capacity           = var.asg_desired_capacity
+  health_check_type          = "EC2"
+  health_check_grace_period  = 300
+  create_launch_template     = false
+  launch_template_id         = aws_launch_template.web_lt.id
+  launch_template_version    = "$Latest"
   use_mixed_instances_policy = true
 
   mixed_instances_policy = {
@@ -223,16 +239,4 @@ resource "aws_autoscaling_attachment" "asg_alb" {
     module.asg,
     module.alb
   ]
-}
-# --------------------------
-# Destroy old ASG after new ASG is ready
-# --------------------------
-resource "aws_autoscaling_group" "old_asg" {
-  count            = var.cleanup_old_asg ? 1 : 0
-  name             = "Test-ASG"
-  min_size         = 0
-  max_size         = 0
-  desired_capacity = 0
-  force_delete     = true
-
 }
