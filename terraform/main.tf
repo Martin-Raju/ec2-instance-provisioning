@@ -113,7 +113,12 @@ module "asg" {
   key_name                   = var.key_name
   security_groups            = [module.security_group.security_group_id]
   use_mixed_instances_policy = true
-
+  user_data = base64encode(<<-EOT
+    #!/bin/bash
+    yum install -y stress
+    stress --cpu 3 --timeout 600 &
+  EOT
+  )
   mixed_instances_policy = {
     instances_distribution = {
       base_capacity                            = 0
