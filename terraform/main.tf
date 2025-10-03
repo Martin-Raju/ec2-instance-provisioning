@@ -2,10 +2,17 @@ provider "aws" {
   region = var.aws_region
 }
 
+# --------------------------
 # Default VPC & Subnets
+# --------------------------
+
 data "aws_vpc" "default" {
   default = true
 }
+
+# --------------------------
+# Data block
+# --------------------------
 
 data "aws_subnets" "default" {
   filter {
@@ -15,7 +22,10 @@ data "aws_subnets" "default" {
 }
 
 
+# --------------------------
 # Security Group
+# --------------------------
+
 module "security_group" {
   source      = "./modules/terraform-aws-security-group-5.3.0"
   name        = "Allow_Web"
@@ -49,7 +59,10 @@ module "security_group" {
   ]
 }
 
+# --------------------------
 # Capture AMI from running instance
+# --------------------------
+
 resource "aws_ami_from_instance" "web_ami" {
   name = "webserver-ami-${formatdate("YYYYMMDDHHMMss", timestamp())}"
 
@@ -61,6 +74,10 @@ resource "aws_ami_from_instance" "web_ami" {
     Environment = var.environment
   }
 }
+
+# --------------------------
+#  ALB
+# --------------------------
 
 module "alb" {
   source             = "terraform-aws-modules/alb/aws"
@@ -95,8 +112,10 @@ module "alb" {
     }
   ]
 }
-
+#--------------------------------------------------------
 # --- Auto Scaling Group with Launch Template and Mixed Instances ---
+#--------------------------------------------------------
+
 module "asg" {
   source                     = "./modules/terraform-aws-autoscaling-8.3.1"
   name                       = "Test-Auto-SG"
@@ -105,7 +124,7 @@ module "asg" {
   max_size                   = var.asg_max_size
   desired_capacity           = var.asg_desired_capacity
   health_check_type          = "EC2"
-  health_check_grace_period  = 300
+  health_check_grace_period  = 100
   create_launch_template     = true
   force_delete               = true
   launch_template_name       = "Test-Web-lt"
@@ -113,12 +132,22 @@ module "asg" {
   key_name                   = var.key_name
   security_groups            = [module.security_group.security_group_id]
   use_mixed_instances_policy = true
+
+  #--------------------------
+  # cpu stress for testing 
+  #--------------------------   
+
   user_data = base64encode(<<-EOT
     #!/bin/bash
     yum install -y stress
     stress --cpu 3 --timeout 600 &
   EOT
   )
+
+  #--------------------------
+  # mixed_instances_policy
+  #-------------------------- 
+
   mixed_instances_policy = {
     instances_distribution = {
       base_capacity                            = 0
@@ -137,6 +166,10 @@ module "asg" {
     ]
   }
 
+  #----------------------------------
+  # scaling_policies
+  #----------------------------------
+
   scaling_policies = [
     {
       name                      = "cpu-target-tracking"
@@ -151,7 +184,10 @@ module "asg" {
     }
   ]
 
+  #-----------------------------------------------------------
   # Enable rolling updates for new AMI/Launch Template changes
+  #-----------------------------------------------------------
+
   instance_refresh = {
     strategy = "Rolling"
     preferences = {
@@ -166,8 +202,9 @@ module "asg" {
   }
 }
 
-
+#----------------------------------
 # --- Attach ASG to Target Group ---
+#----------------------------------
 
 resource "aws_autoscaling_attachment" "asg_alb" {
 
