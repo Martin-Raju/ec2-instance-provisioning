@@ -68,3 +68,4 @@
 #       - name: Terraform Apply
 #         run: terraform apply -auto-approve -var "ami_id=${{ needs.build-ami.outputs.ami_id }}"
 #         working-directory: terraform
+

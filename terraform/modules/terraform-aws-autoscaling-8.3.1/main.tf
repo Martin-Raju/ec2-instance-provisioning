@@ -681,7 +681,6 @@ resource "aws_autoscaling_group" "idc" {
   default_cooldown          = var.default_cooldown
   default_instance_warmup   = var.default_instance_warmup
   protect_from_scale_in     = var.protect_from_scale_in
-
   # Use `traffic_source_identifier`/`traffic_source_type` instead
   # load_balancers    = var.load_balancers
   # target_group_arns = var.target_group_arns
