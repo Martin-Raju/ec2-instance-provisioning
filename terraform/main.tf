@@ -81,7 +81,6 @@ resource "aws_ami_from_instance" "web_ami" {
 
 module "alb" {
   source             = "./modules/terraform-aws-alb-7.0.0"
-  version            = "7.0.0"
   name               = "Web-Alb"
   load_balancer_type = "application"
   security_groups    = [module.security_group.security_group_id]
