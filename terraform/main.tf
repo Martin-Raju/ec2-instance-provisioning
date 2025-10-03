@@ -53,36 +53,36 @@ data "aws_security_groups" "existing" {
 # --------------------------
 
 module "security_group" {
-source      = "./modules/terraform-aws-security-group-5.3.0"
-name        = "allow_web"
-description = "Allow HTTP/SSH inbound traffic"
-vpc_id      = data.aws_vpc.default.id
+  source      = "./modules/terraform-aws-security-group-5.3.0"
+  name        = "allow_web"
+  description = "Allow HTTP/SSH inbound traffic"
+  vpc_id      = data.aws_vpc.default.id
 
-ingress_with_cidr_blocks = [
-{
-from_port   = 22
-to_port     = 22
-protocol    = "tcp"
-cidr_blocks = "0.0.0.0/0"
-description = "SSH"
-},
-{
-from_port   = 80
-to_port     = 80
-protocol    = "tcp"
-cidr_blocks = "0.0.0.0/0"
-description = "HTTP"
-}
-]
+  ingress_with_cidr_blocks = [
+    {
+      from_port   = 22
+      to_port     = 22
+      protocol    = "tcp"
+      cidr_blocks = "0.0.0.0/0"
+      description = "SSH"
+    },
+    {
+      from_port   = 80
+      to_port     = 80
+      protocol    = "tcp"
+      cidr_blocks = "0.0.0.0/0"
+      description = "HTTP"
+    }
+  ]
 
-egress_with_cidr_blocks = [
-{
-from_port   = 0
-to_port     = 0
-protocol    = "-1"
-cidr_blocks = "0.0.0.0/0"
-}
-]
+  egress_with_cidr_blocks = [
+    {
+      from_port   = 0
+      to_port     = 0
+      protocol    = "-1"
+      cidr_blocks = "0.0.0.0/0"
+    }
+  ]
 }
 
 # --------------------------
@@ -124,8 +124,8 @@ module "alb" {
   name               = "web-alb-${substr(timestamp(), 8, 4)}"
   load_balancer_type = "application"
   security_groups    = [module.security_group.security_group_id]
-  subnets         = data.aws_subnets.default.ids
-  vpc_id          = data.aws_vpc.default.id
+  subnets            = data.aws_subnets.default.ids
+  vpc_id             = data.aws_vpc.default.id
   target_groups = [
     {
       name_prefix      = "Web-Tg"
