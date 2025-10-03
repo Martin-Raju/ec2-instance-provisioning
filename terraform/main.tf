@@ -2,10 +2,17 @@ provider "aws" {
   region = var.aws_region
 }
 
+# --------------------------
 # Default VPC & Subnets
+# --------------------------
+
 data "aws_vpc" "default" {
   default = true
 }
+
+# --------------------------
+# Data block
+# --------------------------
 
 data "aws_subnets" "default" {
   filter {
@@ -14,20 +21,14 @@ data "aws_subnets" "default" {
   }
 }
 
-data "aws_lb" "existing" {
-  count = var.create_alb ? 0 : 1
-  name  = var.existing_alb_name
-}
 
-data "aws_lb_target_group" "existing" {
-  count = var.create_alb ? 0 : 1
-  name  = var.existing_tg_name
-}
-
+# --------------------------
 # Security Group
+# --------------------------
+
 module "security_group" {
   source      = "./modules/terraform-aws-security-group-5.3.0"
-  name        = "allow_web"
+  name        = "Allow_Web"
   description = "Allow HTTP/SSH inbound traffic"
   vpc_id      = data.aws_vpc.default.id
 
@@ -58,7 +59,10 @@ module "security_group" {
   ]
 }
 
+# --------------------------
 # Capture AMI from running instance
+# --------------------------
+
 resource "aws_ami_from_instance" "web_ami" {
   name = "webserver-ami-${formatdate("YYYYMMDDHHMMss", timestamp())}"
 
@@ -71,11 +75,14 @@ resource "aws_ami_from_instance" "web_ami" {
   }
 }
 
+# --------------------------
+#  ALB
+# --------------------------
+
 module "alb" {
   source             = "terraform-aws-modules/alb/aws"
   version            = "7.0.0"
-  count              = var.create_alb ? 1 : 0
-  name               = "web-alb-${substr(timestamp(), 8, 4)}"
+  name               = "Web-Alb"
   load_balancer_type = "application"
   security_groups    = [module.security_group.security_group_id]
   subnets            = data.aws_subnets.default.ids
@@ -105,24 +112,30 @@ module "alb" {
     }
   ]
 }
-
+#--------------------------------------------------------
 # --- Auto Scaling Group with Launch Template and Mixed Instances ---
+#--------------------------------------------------------
+
 module "asg" {
   source                     = "./modules/terraform-aws-autoscaling-8.3.1"
-  name                       = "Test-server"
+  name                       = "Test-Auto-SG"
   vpc_zone_identifier        = data.aws_subnets.default.ids
   min_size                   = var.asg_min_size
   max_size                   = var.asg_max_size
   desired_capacity           = var.asg_desired_capacity
   health_check_type          = "EC2"
-  health_check_grace_period  = 300
+  health_check_grace_period  = 100
   create_launch_template     = true
   force_delete               = true
-  launch_template_name       = "spot-lt"
+  launch_template_name       = "Test-Web-lt"
   image_id                   = aws_ami_from_instance.web_ami.id
   key_name                   = var.key_name
   security_groups            = [module.security_group.security_group_id]
   use_mixed_instances_policy = true
+
+  #--------------------------
+  # cpu stress for testing 
+  #--------------------------   
 
   user_data = base64encode(<<-EOT
     #!/bin/bash
@@ -130,6 +143,10 @@ module "asg" {
     stress --cpu 3 --timeout 600 &
   EOT
   )
+
+  #--------------------------
+  # mixed_instances_policy
+  #-------------------------- 
 
   mixed_instances_policy = {
     instances_distribution = {
@@ -142,12 +159,16 @@ module "asg" {
     }
 
     override = [
-      { instance_type = var.instance_type_p1, spot_price = var.spot_price_p1 },
-      { instance_type = var.instance_type_p2, spot_price = var.spot_price_p2 },
+      #{ instance_type = var.instance_type_p1, spot_price = var.spot_price_p1 },
+      #{ instance_type = var.instance_type_p2, spot_price = var.spot_price_p2 },
       { instance_type = var.instance_type_p3, spot_price = var.spot_price_p3 },
       { instance_type = var.instance_type_p4, spot_price = var.spot_price_p4 }
     ]
   }
+
+  #----------------------------------
+  # scaling_policies
+  #----------------------------------
 
   scaling_policies = [
     {
@@ -162,21 +183,33 @@ module "asg" {
       }
     }
   ]
+
+  #-----------------------------------------------------------
+  # Enable rolling updates for new AMI/Launch Template changes
+  #-----------------------------------------------------------
+
+  instance_refresh = {
+    strategy = "Rolling"
+    preferences = {
+      min_healthy_percentage = 50
+      instance_warmup        = 60
+    }
+  }
+
   tags = {
     Name        = "Asg-instance"
     Environment = var.environment
   }
 }
-locals {
-  alb_target_group_arn = var.create_alb ? module.alb[0].target_group_arns[0] : data.aws_lb_target_group.existing[0].arn
-}
 
+#----------------------------------
 # --- Attach ASG to Target Group ---
+#----------------------------------
 
 resource "aws_autoscaling_attachment" "asg_alb" {
 
   autoscaling_group_name = module.asg.autoscaling_group_name
-  lb_target_group_arn    = local.alb_target_group_arn
+  lb_target_group_arn    = module.alb.target_group_arns[0]
   depends_on = [
     module.asg,
     module.alb
