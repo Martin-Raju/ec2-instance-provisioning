@@ -162,7 +162,6 @@ module "asg" {
     }
   }
 
-  target_group_arns = [module.alb.target_group_arns[0]]
   tags = {
     Name        = "Asg-instance"
     Environment = var.environment
