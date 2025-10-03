@@ -243,28 +243,31 @@ resource "aws_autoscaling_group" "this" {
   health_check_type         = "EC2"
   health_check_grace_period = 300
 
-  launch_template {
-    id      = aws_launch_template.web_lt.id
-    version = "$Latest"
-  }
 
   target_group_arns = [local.alb_target_group_arn]
 
   mixed_instances_policy {
+    launch_template {
+      launch_template_specification {
+        launch_template_id = aws_launch_template.web_lt.id
+        version            = "$Latest"
+      }
+
+      launch_template_override = [
+        { instance_type = var.instance_type_p1, spot_price = var.spot_price_p1 },
+        { instance_type = var.instance_type_p2, spot_price = var.spot_price_p2 },
+        { instance_type = var.instance_type_p3, spot_price = var.instance_type_p3 },
+        { instance_type = var.instance_type_p4, spot_price = var.spot_price_p4 }
+      ]
+    }
+
     instances_distribution {
-      base_capacity                            = 0
+      on_demand_base_capacity                  = 0
       on_demand_percentage_above_base_capacity = var.on_demand_percentage_above_base_capacity
       spot_allocation_strategy                 = "lowest-price"
       on_demand_allocation_strategy            = "prioritized"
       spot_instance_pools                      = 4
     }
-
-    override = [
-      { instance_type = var.instance_type_p1, spot_price = var.spot_price_p1 },
-      { instance_type = var.instance_type_p2, spot_price = var.spot_price_p2 },
-      { instance_type = var.instance_type_p3, spot_price = var.spot_price_p3 },
-      { instance_type = var.instance_type_p4, spot_price = var.spot_price_p4 }
-    ]
   }
 
   tag {
