@@ -253,11 +253,10 @@ resource "aws_autoscaling_group" "this" {
         version            = "$Latest"
       }
 
-      launch_template_override = [
-        { instance_type = var.instance_type_p1, spot_price = var.spot_price_p1 },
-        { instance_type = var.instance_type_p2, spot_price = var.spot_price_p2 },
-        { instance_type = var.instance_type_p3, spot_price = var.instance_type_p3 },
-        { instance_type = var.instance_type_p4, spot_price = var.spot_price_p4 }
+       override { instance_type = var.instance_type_p1, spot_price = var.spot_price_p1 },
+       override { instance_type = var.instance_type_p2, spot_price = var.spot_price_p2 },
+       override { instance_type = var.instance_type_p3, spot_price = var.spot_price_p3 },
+       override { instance_type = var.instance_type_p4, spot_price = var.spot_price_p4 }
       ]
     }
 
