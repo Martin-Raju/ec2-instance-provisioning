@@ -52,91 +52,37 @@ data "aws_security_groups" "existing" {
 # Security Group
 # --------------------------
 
-# module "security_group" {
-# source      = "./modules/terraform-aws-security-group-5.3.0"
-# name        = "allow_web"
-# description = "Allow HTTP/SSH inbound traffic"
-# vpc_id      = data.aws_vpc.default.id
+module "security_group" {
+source      = "./modules/terraform-aws-security-group-5.3.0"
+name        = "allow_web"
+description = "Allow HTTP/SSH inbound traffic"
+vpc_id      = data.aws_vpc.default.id
 
-# ingress_with_cidr_blocks = [
-# {
-# from_port   = 22
-# to_port     = 22
-# protocol    = "tcp"
-# cidr_blocks = "0.0.0.0/0"
-# description = "SSH"
-# },
-# {
-# from_port   = 80
-# to_port     = 80
-# protocol    = "tcp"
-# cidr_blocks = "0.0.0.0/0"
-# description = "HTTP"
-# }
-# ]
-
-# egress_with_cidr_blocks = [
-# {
-# from_port   = 0
-# to_port     = 0
-# protocol    = "-1"
-# cidr_blocks = "0.0.0.0/0"
-# }
-# ]
-# }
-
-# --------------------------
-# Security Group
-# --------------------------
-resource "aws_security_group" "allow_web" {
-  name        = "allow_web"
-  count       = length(data.aws_security_groups.existing.*.id) == 0 ? 1 : 0
-  description = "Allow HTTP/SSH inbound traffic"
-  vpc_id      = data.aws_vpc.default.id
-
-  # Ensure Terraform ignores future changes to SG name, description, or rules
-
-  tags = {
-    Name = "allow_web"
-  }
+ingress_with_cidr_blocks = [
+{
+from_port   = 22
+to_port     = 22
+protocol    = "tcp"
+cidr_blocks = "0.0.0.0/0"
+description = "SSH"
+},
+{
+from_port   = 80
+to_port     = 80
+protocol    = "tcp"
+cidr_blocks = "0.0.0.0/0"
+description = "HTTP"
 }
-##########################################
-# Use existing SG if already exists
-##########################################
-locals {
-  sg_id = length(data.aws_security_groups.existing.ids) > 0 ? data.aws_security_groups.existing.ids[0] : aws_security_group.allow_web[0].id
-}
-##########################################
-# Ingress Rules
-##########################################
-resource "aws_security_group_rule" "allow_ssh" {
-  security_group_id = local.sg_id
-  type              = "ingress"
-  from_port         = 22
-  to_port           = 22
-  protocol          = "tcp"
-  cidr_blocks       = ["0.0.0.0/0"]
-}
+]
 
-resource "aws_security_group_rule" "allow_http" {
-  security_group_id = local.sg_id
-  type              = "ingress"
-  from_port         = 80
-  to_port           = 80
-  protocol          = "tcp"
-  cidr_blocks       = ["0.0.0.0/0"]
+egress_with_cidr_blocks = [
+{
+from_port   = 0
+to_port     = 0
+protocol    = "-1"
+cidr_blocks = "0.0.0.0/0"
 }
-
-##########################################
-# Egress Rule
-##########################################
-resource "aws_security_group_rule" "allow_all_egress" {
-  security_group_id = local.sg_id
-  type              = "egress"
-  from_port         = 0
-  to_port           = 0
-  protocol          = "-1"
-  cidr_blocks       = ["0.0.0.0/0"]
+]
 }
 
 # --------------------------
@@ -177,8 +123,7 @@ module "alb" {
   count              = var.create_alb ? 1 : 0
   name               = "web-alb-${substr(timestamp(), 8, 4)}"
   load_balancer_type = "application"
-  #security_groups    = [module.security_group.security_group_id]
-  security_groups = [local.sg_id]
+  security_groups    = [module.security_group.security_group_id]
   subnets         = data.aws_subnets.default.ids
   vpc_id          = data.aws_vpc.default.id
   target_groups = [
@@ -227,8 +172,7 @@ module "asg" {
   image_id                = aws_ami_from_instance.web_ami.id
   key_name                = var.key_name
   #vpc_security_group_ids  = [module.security_group.security_group_id]
-  #security_groups            = [module.security_group.security_group_id]
-  security_groups            = [local.sg_id]
+  security_groups            = [module.security_group.security_group_id]
   use_mixed_instances_policy = true
 
   mixed_instances_policy = {
@@ -242,7 +186,7 @@ module "asg" {
     }
 
     override = [
-      #{ instance_type = var.instance_type_p1, spot_price = var.spot_price_p1 },
+      { instance_type = var.instance_type_p1, spot_price = var.spot_price_p1 },
       { instance_type = var.instance_type_p2, spot_price = var.spot_price_p2 },
       { instance_type = var.instance_type_p3, spot_price = var.spot_price_p3 },
       { instance_type = var.instance_type_p4, spot_price = var.spot_price_p4 }
