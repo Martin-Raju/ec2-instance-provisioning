@@ -35,5 +35,6 @@ jobs:
         working-directory: terraform
 
       - name: Terraform Apply
-        run: terraform apply -auto-approve -var "running_instance_id=${{ github.event.inputs.running_instance_id }}"
+        #run: terraform apply -auto-approve -var "running_instance_id=${{ github.event.inputs.running_instance_id }}"
+        run: terraform destroy -auto-approve -var "running_instance_id=${{ github.event.inputs.running_instance_id }}"
         working-directory: terraform
