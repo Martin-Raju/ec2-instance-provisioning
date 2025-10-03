@@ -161,12 +161,12 @@ module "asg" {
 
 # --- Attach ASG to Target Group ---
 
-#resource "aws_autoscaling_attachment" "asg_alb" {
+resource "aws_autoscaling_attachment" "asg_alb" {
 
-# autoscaling_group_name = module.asg.autoscaling_group_name
-# lb_target_group_arn    = local.alb_target_group_arn
-# depends_on = [
-#   module.asg,
-#   module.alb
-# ]
-#}
+ autoscaling_group_name = module.asg.autoscaling_group_name
+ lb_target_group_arn    = local.alb_target_group_arn
+ depends_on = [
+   module.asg,
+   module.alb
+ ]
+}
