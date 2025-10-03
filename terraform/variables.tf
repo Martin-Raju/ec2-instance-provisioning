@@ -38,10 +38,10 @@ variable "asg_desired_capacity" {
 #  type        = string
 #}
 
-variable "instance_type_p2" {
-  description = "List of instance types for the Mixed Instances ASG"
-  type        = string
-}
+#variable "instance_type_p2" {
+#  description = "List of instance types for the Mixed Instances ASG"
+#  type        = string
+#}
 
 variable "instance_type_p3" {
   description = "List of instance types for the Mixed Instances ASG"
@@ -73,10 +73,10 @@ variable "cpu_target_value" {
 #  type        = number
 #}
 
-variable "spot_price_p2" {
-  description = "Default instance type for Launch Template "
-  type        = number
-}
+#variable "spot_price_p2" {
+#  description = "Default instance type for Launch Template "
+#  type        = number
+#}
 
 variable "spot_price_p3" {
   description = "Default instance type for Launch Template "
