@@ -152,6 +152,17 @@ module "asg" {
       }
     }
   ]
+
+  # Enable rolling updates for new AMI/Launch Template changes
+  instance_refresh = {
+    strategy = "Rolling"
+    preferences = {
+      min_healthy_percentage = 90
+      instance_warmup        = 100
+    }
+  }
+
+  target_group_arns = [module.alb.target_group_arns[0]]
   tags = {
     Name        = "Asg-instance"
     Environment = var.environment
@@ -163,10 +174,10 @@ module "asg" {
 
 resource "aws_autoscaling_attachment" "asg_alb" {
 
- autoscaling_group_name = module.asg.autoscaling_group_name
- lb_target_group_arn    = local.alb_target_group_arn
- depends_on = [
-   module.asg,
-   module.alb
- ]
+  autoscaling_group_name = module.asg.autoscaling_group_name
+  lb_target_group_arn    = module.alb.target_group_arns[0]
+  depends_on = [
+    module.asg,
+    module.alb
+  ]
 }
