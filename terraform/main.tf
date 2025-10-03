@@ -14,20 +14,11 @@ data "aws_subnets" "default" {
   }
 }
 
-data "aws_lb" "existing" {
-  count = var.create_alb ? 0 : 1
-  name  = var.existing_alb_name
-}
-
-data "aws_lb_target_group" "existing" {
-  count = var.create_alb ? 0 : 1
-  name  = var.existing_tg_name
-}
 
 # Security Group
 module "security_group" {
   source      = "./modules/terraform-aws-security-group-5.3.0"
-  name        = "allow_web"
+  name        = "Allow_Web"
   description = "Allow HTTP/SSH inbound traffic"
   vpc_id      = data.aws_vpc.default.id
 
@@ -74,8 +65,7 @@ resource "aws_ami_from_instance" "web_ami" {
 module "alb" {
   source             = "terraform-aws-modules/alb/aws"
   version            = "7.0.0"
-  count              = var.create_alb ? 1 : 0
-  name               = "web-alb-${substr(timestamp(), 8, 4)}"
+  name               = "Web-Alb"
   load_balancer_type = "application"
   security_groups    = [module.security_group.security_group_id]
   subnets            = data.aws_subnets.default.ids
@@ -109,7 +99,7 @@ module "alb" {
 # --- Auto Scaling Group with Launch Template and Mixed Instances ---
 module "asg" {
   source                     = "./modules/terraform-aws-autoscaling-8.3.1"
-  name                       = "Test-server"
+  name                       = "Test-Auto-SG"
   vpc_zone_identifier        = data.aws_subnets.default.ids
   min_size                   = var.asg_min_size
   max_size                   = var.asg_max_size
@@ -167,18 +157,16 @@ module "asg" {
     Environment = var.environment
   }
 }
-locals {
-  alb_target_group_arn = var.create_alb ? module.alb[0].target_group_arns[0] : data.aws_lb_target_group.existing[0].arn
-}
+
 
 # --- Attach ASG to Target Group ---
 
-resource "aws_autoscaling_attachment" "asg_alb" {
+#resource "aws_autoscaling_attachment" "asg_alb" {
 
-  autoscaling_group_name = module.asg.autoscaling_group_name
-  lb_target_group_arn    = local.alb_target_group_arn
-  depends_on = [
-    module.asg,
-    module.alb
-  ]
-}
+# autoscaling_group_name = module.asg.autoscaling_group_name
+# lb_target_group_arn    = local.alb_target_group_arn
+# depends_on = [
+#   module.asg,
+#   module.alb
+# ]
+#}
