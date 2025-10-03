@@ -150,8 +150,8 @@ module "asg" {
   instance_refresh = {
     strategy = "Rolling"
     preferences = {
-      min_healthy_percentage = 90
-      instance_warmup        = 100
+      min_healthy_percentage = 50
+      instance_warmup        = 60
     }
   }
 
