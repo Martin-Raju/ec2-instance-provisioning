@@ -80,7 +80,7 @@ resource "aws_ami_from_instance" "web_ami" {
 # --------------------------
 
 module "alb" {
-  source             = "terraform-aws-modules/alb/aws"
+  source             = "./modules/terraform-aws-alb-7.0.0"
   version            = "7.0.0"
   name               = "Web-Alb"
   load_balancer_type = "application"
