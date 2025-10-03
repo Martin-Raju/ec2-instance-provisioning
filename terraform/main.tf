@@ -42,12 +42,10 @@ data "aws_security_groups" "existing" {
   }
 }
 
-#data "aws_autoscaling_groups" "existing" {
-#  filter {
-#    name   = "tag:Name"
-#    values = ["Test-ASG-*"]
-#  }
-#}
+data "aws_autoscaling_group" "existing" {
+  count = 0
+  name  = "Test-ASG"
+}
 # --------------------------
 # Security Group
 # --------------------------
@@ -103,16 +101,16 @@ resource "aws_ami_from_instance" "web_ami" {
 # --------------------------
 # Create Launch Template
 # --------------------------
-#resource "aws_launch_template" "web_lt" {
-#  name_prefix            = "web-lt-"
-#  image_id               = aws_ami_from_instance.web_ami.id
-#  instance_type          = var.instance_type_p2
-#  key_name               = var.key_name
-#  vpc_security_group_ids = [module.security_group.security_group_id]
-#  lifecycle {
-#    create_before_destroy = true
-#  }
-#}
+resource "aws_launch_template" "web_lt" {
+  name_prefix            = "web-lt-"
+  image_id               = aws_ami_from_instance.web_ami.id
+  instance_type          = var.instance_type_p1
+  key_name               = var.key_name
+  vpc_security_group_ids = [module.security_group.security_group_id]
+  lifecycle {
+    create_before_destroy = true
+  }
+}
 
 # --------------------------
 # Optional ALB
@@ -153,77 +151,77 @@ module "alb" {
 }
 
 # --------------------------
-# Create ASG 
+# Create ASG - module
 # --------------------------
-module "asg" {
-  source                    = "./modules/terraform-aws-autoscaling-8.3.1"
-  name                      = "Test-ASG"
-  use_name_prefix           = false
-  vpc_zone_identifier       = data.aws_subnets.default.ids
-  min_size                  = var.asg_min_size
-  max_size                  = var.asg_max_size
-  desired_capacity          = var.asg_desired_capacity
-  health_check_type         = "EC2"
-  health_check_grace_period = 300
-  create_launch_template    = true
-  # force_delete               = false
-  #launch_template_id       = aws_launch_template.web_lt.id
-  launch_template_version = "$Latest"
-  image_id                = aws_ami_from_instance.web_ami.id
-  key_name                = var.key_name
-  #vpc_security_group_ids  = [module.security_group.security_group_id]
-  security_groups            = [module.security_group.security_group_id]
-  use_mixed_instances_policy = true
+# module "asg" {
+# source                    = "./modules/terraform-aws-autoscaling-8.3.1"
+# name                      = "Test-ASG"
+# use_name_prefix           = false
+# vpc_zone_identifier       = data.aws_subnets.default.ids
+# min_size                  = var.asg_min_size
+# max_size                  = var.asg_max_size
+# desired_capacity          = var.asg_desired_capacity
+# health_check_type         = "EC2"
+# health_check_grace_period = 300
+# create_launch_template    = true
+# # force_delete               = false
+# #launch_template_id       = aws_launch_template.web_lt.id
+# launch_template_version = "$Latest"
+# image_id                = aws_ami_from_instance.web_ami.id
+# key_name                = var.key_name
+# #vpc_security_group_ids  = [module.security_group.security_group_id]
+# security_groups            = [module.security_group.security_group_id]
+# use_mixed_instances_policy = true
 
-  mixed_instances_policy = {
-    instances_distribution = {
-      base_capacity                            = 0
-      on_demand_percentage_above_base_capacity = var.on_demand_percentage_above_base_capacity
-      spot_allocation_strategy                 = "lowest-price"
-      on_demand_allocation_strategy            = "prioritized"
-      spot_instance_pools                      = 4
-      #spot_max_price                           = var.spot_max_price
-    }
+# mixed_instances_policy = {
+# instances_distribution = {
+# base_capacity                            = 0
+# on_demand_percentage_above_base_capacity = var.on_demand_percentage_above_base_capacity
+# spot_allocation_strategy                 = "lowest-price"
+# on_demand_allocation_strategy            = "prioritized"
+# spot_instance_pools                      = 4
+# #spot_max_price                           = var.spot_max_price
+# }
 
-    override = [
-      { instance_type = var.instance_type_p1, spot_price = var.spot_price_p1 },
-      { instance_type = var.instance_type_p2, spot_price = var.spot_price_p2 },
-      { instance_type = var.instance_type_p3, spot_price = var.spot_price_p3 },
-      { instance_type = var.instance_type_p4, spot_price = var.spot_price_p4 }
-    ]
-  }
+# override = [
+# { instance_type = var.instance_type_p1, spot_price = var.spot_price_p1 },
+# { instance_type = var.instance_type_p2, spot_price = var.spot_price_p2 },
+# { instance_type = var.instance_type_p3, spot_price = var.spot_price_p3 },
+# { instance_type = var.instance_type_p4, spot_price = var.spot_price_p4 }
+# ]
+# }
 
-  scaling_policies = [
-    {
-      name                      = "cpu-target-tracking"
-      policy_type               = "TargetTrackingScaling"
-      estimated_instance_warmup = 120
-      target_tracking_configuration = {
-        predefined_metric_specification = {
-          predefined_metric_type = "ASGAverageCPUUtilization"
-        }
-        target_value = var.cpu_target_value
-      }
-    }
-  ]
+# scaling_policies = [
+# {
+# name                      = "cpu-target-tracking"
+# policy_type               = "TargetTrackingScaling"
+# estimated_instance_warmup = 120
+# target_tracking_configuration = {
+# predefined_metric_specification = {
+# predefined_metric_type = "ASGAverageCPUUtilization"
+# }
+# target_value = var.cpu_target_value
+# }
+# }
+# ]
 
-  # ----------------------------------------------------
-  # Instance Refresh Block for Rolling Updates
-  # ----------------------------------------------------
-  instance_refresh = {
-    strategy = "Rolling"
-    preferences = {
-      min_healthy_percentage = 90
-      instance_warmup        = 100
-    }
-    triggers = []
-  }
+# ----------------------------------------------------
+# Instance Refresh Block for Rolling Updates
+# ----------------------------------------------------
+# instance_refresh = {
+# strategy = "Rolling"
+# preferences = {
+# min_healthy_percentage = 90
+# instance_warmup        = 100
+# }
+# triggers = []
+# }
 
-  tags = {
-    Name        = "Asg-instance"
-    Environment = var.environment
-  }
-}
+# tags = {
+# Name        = "Asg-instance"
+# Environment = var.environment
+# }
+# }
 
 # --------------------------
 # Local Target Group ARN
@@ -234,15 +232,90 @@ locals {
 }
 
 # --------------------------
+# Create/Update ASG
+# --------------------------
+resource "aws_autoscaling_group" "this" {
+  name                      = "Test-ASG"
+  vpc_zone_identifier       = data.aws_subnets.default.ids
+  min_size                  = var.asg_min_size
+  max_size                  = var.asg_max_size
+  desired_capacity          = var.asg_desired_capacity
+  health_check_type         = "EC2"
+  health_check_grace_period = 300
+
+  launch_template {
+    id      = aws_launch_template.web_lt.id
+    version = "$Latest"
+  }
+
+  target_group_arns = [local.alb_target_group_arn]
+
+  mixed_instances_policy {
+    instances_distribution {
+      base_capacity                            = 0
+      on_demand_percentage_above_base_capacity = var.on_demand_percentage_above_base_capacity
+      spot_allocation_strategy                 = "lowest-price"
+      on_demand_allocation_strategy            = "prioritized"
+      spot_instance_pools                      = 4
+    }
+
+    override = [
+      { instance_type = var.instance_type_p1, spot_price = var.spot_price_p1 },
+      { instance_type = var.instance_type_p2, spot_price = var.spot_price_p2 },
+      { instance_type = var.instance_type_p3, spot_price = var.spot_price_p3 },
+      { instance_type = var.instance_type_p4, spot_price = var.spot_price_p4 }
+    ]
+  }
+
+  tag {
+    key                 = "Name"
+    value               = "Asg-instance"
+    propagate_at_launch = true
+  }
+  tag {
+    key                 = "Environment"
+    value               = var.environment
+    propagate_at_launch = true
+  }
+
+  instance_refresh {
+    strategy = "Rolling"
+    preferences {
+      min_healthy_percentage = 90
+      instance_warmup        = 100
+    }
+    triggers = [aws_launch_template.web_lt.id]
+  }
+}
+
+# --------------------------
+# Scaling Policy 
+# --------------------------
+resource "aws_autoscaling_policy" "cpu_target_tracking" {
+  name                      = "cpu-target-tracking"
+  autoscaling_group_name    = aws_autoscaling_group.this.name
+  policy_type               = "TargetTrackingScaling"
+  estimated_instance_warmup = 120
+
+  target_tracking_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ASGAverageCPUUtilization"
+    }
+    target_value = var.cpu_target_value
+  }
+}
+
+
+# --------------------------
 # Attach ASG to Target Group
 # --------------------------
 
-resource "aws_autoscaling_attachment" "asg_alb" {
+# resource "aws_autoscaling_attachment" "asg_alb" {
 
-  autoscaling_group_name = module.asg.autoscaling_group_name
-  lb_target_group_arn    = local.alb_target_group_arn
-  depends_on = [
-    module.asg,
-    module.alb
-  ]
-}
+# autoscaling_group_name = module.asg.autoscaling_group_name
+# lb_target_group_arn    = local.alb_target_group_arn
+# depends_on = [
+# module.asg,
+# module.alb
+# ]
+# }
