@@ -9,6 +9,7 @@ This repository deploys a web application stack on AWS using Terraform and autom
 
 <img width="1024" height="655" alt="test" src="https://github.com/user-attachments/assets/c5052060-e31f-49c6-aed2-65ef5c018482" />
 
+---
 ## Infrastructure Components
 
 | Component              | Description                                       |
