@@ -5,37 +5,9 @@
 This repository deploys a web application stack on AWS using Terraform and automates runs with GitHub Actions. It captures an AMI from a running EC2 instance, creates an ALB, and deploys an Auto Scaling Group using a mixed instances policy (Spot + On-Demand). The README below includes an embedded SVG architecture diagram that will render on GitHub.
 
 ---
+## Architecture Diagram
 
-```mermaid
-%% CI/CD Pipeline with Terraform & AWS Resource Creation
-subgraph CI/CD Pipeline (Deploy Terraform Job)
-    B --> C[Step 1: Checkout Code & Install Terraform];
-    C --> D{Step 2: Validate running_instance_id Input};
-
-    D -- Instance ID Missing --> E[[Job Failed: Missing Required AMI Source ID]];
-    D -- Instance ID Valid --> F[Step 3: Terraform Init];
-    
-    %% Section 2: AWS Resource Creation Sequence (Terraform Apply)
-    F --> G[Step 4: Terraform Plan];
-    G --> H[Step 5: Terraform Apply];
-    
-    subgraph AWS Resource Creation
-        H --> H1(Create aws_ami_from_instance - Custom AMI);
-        H1 --> H2(Deploy Security Group - Allow HTTP/SSH);
-        H2 --> H3(Deploy ALB Module - Web-Alb);
-        H3 --> H4(Deploy Target Group & HTTP:80 Listener);
-        
-        H4 --> H5(Deploy ASG Module - Test-Auto-SG);
-        H5 --> H6(Create Launch Template with Custom AMI ID);
-        H6 --> H7(Attach Mixed Instances Policy & Scaling Policy);
-        H7 --> H8(Attach ASG to Target Group);
-    end
-end
-
-%% Section 3: Final State and Access
-H8 --> I(ASG Instances are running web servers and registered to Target Group);
-I --> J[End: Application is accessible via ALB DNS (HTTP:80)];
-
+<img width="1024" height="655" alt="test" src="https://github.com/user-attachments/assets/c5052060-e31f-49c6-aed2-65ef5c018482" />
 
 ## Infrastructure Components
 
