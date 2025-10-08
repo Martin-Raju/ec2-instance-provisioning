@@ -232,14 +232,6 @@ Whenever a new AMI is captured from your running instance, Terraform will:
 
 ---
 
-## Notes & Future Improvements
-
-* Use S3 + DynamoDB for remote state and locking.
-* Place ASG in private subnets with a NAT Gateway for production security.
-* Add Karpenter or EKS-based autoscaling if you migrate to Kubernetes.
-* Add CI checks: `terraform validate`, `tflint`, `checkov`, and pre-commit hooks.
-
----
 
 ## Outputs
 
