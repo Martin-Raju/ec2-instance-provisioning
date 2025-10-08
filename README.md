@@ -28,7 +28,7 @@ This repository deploys a web application stack on AWS using Terraform and autom
 
 | Component                          | Description                                                      |
 | -----------------------------------|------------------------------------------------------------------|
-| **Base Capacity**                  | all instances above base can be Spot or On-Demand based on policy|
+| **Base Capacity**                  | All instances above base can be Spot or On-Demand based on policy|
 | **On-Demand Percentage**           | Controlled via variable                                          |
 | **Spot Allocation Strategy**       | Chooses the lowest-priced Spot instances                         |
 | **On-Demand Allocation Strategy**  | Uses priority order defined in override                          |
