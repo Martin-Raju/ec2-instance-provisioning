@@ -97,11 +97,6 @@ jobs:
    * Captures AMI from the given instance.
    * Deploys ALB + ASG + scaling setup automatically.
 
-4. **Output**
-
-   * AMI ID
-   * ALB DNS Name
-   * ASG Name
 
 ---
 
@@ -139,9 +134,3 @@ Whenever a new AMI is captured from your running instance, Terraform will:
 
 ---
 
-
-## Outputs
-
-* ALB DNS name (from `module.alb` outputs)
-* New AMI ID (`aws_ami_from_instance.web_ami.id`)
-* ASG name and status
