@@ -173,7 +173,6 @@ jobs:
 | `AWS_REGION`            | AWS region for deployment (e.g., `us-east-1`)  |
 | `AWS_ACCESS_KEY_ID`     | IAM user access key with Terraform permissions |
 | `AWS_SECRET_ACCESS_KEY` | IAM user secret key                            |
-                   |
 
 ---
 
