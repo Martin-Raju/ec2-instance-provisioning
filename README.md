@@ -2,7 +2,7 @@
 
 ## Overview
 
-This repository deploys a web application stack on AWS using Terraform and automates runs with GitHub Actions. It captures an AMI from a running EC2 instance, creates an ALB, and deploys an Auto Scaling Group using a mixed instances policy (Spot + On-Demand). The README below includes an embedded SVG architecture diagram that will render on GitHub.
+This repository deploys a web application stack on AWS using Terraform and automates runs with GitHub Actions. It captures an AMI from a running EC2 instance, creates an ALB, and deploys an Auto Scaling Group using a mixed instances policy (Spot + On-Demand).
 
 ---
 ## Architecture Diagram
