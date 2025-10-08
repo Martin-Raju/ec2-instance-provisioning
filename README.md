@@ -26,11 +26,13 @@ This repository deploys a web application stack on AWS using Terraform and autom
 ---
 ## Mixed Instances Policy
 
-Base Capacity: all instances above base can be Spot or On-Demand based on policy.
-On-Demand Percentage: Controlled via variable.
-Spot Allocation Strategy: Chooses the lowest-priced Spot instances.
-On-Demand Allocation Strategy: Uses priority order defined in override.
-Spot Instance Pools: AWS evaluates up to 4 pools for availability and cost.
+| Component                          | Description                                                      |
+| -----------------------------------|------------------------------------------------------------------|
+| **Base Capacity**                  | all instances above base can be Spot or On-Demand based on policy|
+| **On-Demand Percentage**           | Controlled via variable                                          |
+| **Spot Allocation Strategy**       | Chooses the lowest-priced Spot instances                         |
+| **On-Demand Allocation Strategy**  | Uses priority order defined in override                          |
+| **Spot Instance Pools**            | AWS evaluates up to 4 pools for availability and cost            |
 
 ---
 ## GitHub Actions Workflow
